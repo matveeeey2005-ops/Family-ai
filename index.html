@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Family AI 1.0 — семейный помощник</title>
+<meta name="theme-color" content="#101e19">
+<meta name="description" content="Family AI — семейный помощник: общение, рецепты, списки и планирование.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<style>
+:root{--bg:#10151e;--panel:#1a2230;--bubble:#263344;--text:#f1f5fa;--muted:#9aaabd;--accent:#36c992;--border:#344052}body.light{--bg:#f3f6fa;--panel:#fff;--bubble:#e9eff5;--text:#15202d;--muted:#64748b;--border:#d7e0e8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif}.app{width:100%;max-width:none;margin:0;height:100dvh;height:100svh;display:flex;flex-direction:column}header{display:flex;align-items:center;gap:12px;padding:14px 15px;background:var(--panel);border-bottom:1px solid var(--border)}.logo{width:43px;height:43px;border-radius:14px;background:var(--accent);display:grid;place-items:center;color:#083e2c;font-size:24px;font-weight:900}.head{flex:1}.head b{font-size:19px}.head small{display:block;color:var(--muted)}button{cursor:pointer;border:0}header button{background:var(--bubble);color:var(--text);border-radius:12px;padding:10px;font-size:18px}.chat{flex:1;overflow:auto;padding:18px max(12px,calc((100vw - 900px)/2));display:flex;flex-direction:column;gap:12px}.message{max-width:min(85%,720px);padding:12px 14px;border-radius:17px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}.bot{align-self:flex-start;background:var(--bubble);border-bottom-left-radius:5px}.user{align-self:flex-end;background:#198b69;color:white;border-bottom-right-radius:5px}.who{font-size:11px;opacity:.65;margin-bottom:5px}.empty{margin:auto;text-align:center;color:var(--muted);max-width:320px;line-height:1.6}.chips{display:flex;gap:7px;overflow:auto;padding:9px 12px}.chips button{flex-shrink:0;background:var(--bubble);color:var(--text);border-radius:20px;padding:8px 12px}.composer{display:flex;gap:8px;padding:12px;background:var(--panel);border-top:1px solid var(--border);padding-bottom:max(12px,env(safe-area-inset-bottom))}input{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:13px;font-size:16px;outline:none}.send{background:var(--accent);color:#083e2c;border-radius:13px;padding:0 17px;font-size:22px}.hint{font-size:11px;text-align:center;color:var(--muted);background:var(--panel);padding:0 8px 8px}dialog{border:1px solid var(--border);border-radius:18px;background:var(--panel);color:var(--text);max-width:95%;width:420px;padding:20px}dialog::backdrop{background:#0009}dialog input{width:100%;margin:7px 0}dialog button{border-radius:10px;padding:10px 14px;margin:4px;background:var(--bubble);color:var(--text)}dialog .primary{background:var(--accent);color:#083e2c}h3{margin-top:0}p{line-height:1.5}
+
+html,body{height:100%;overscroll-behavior:none} .app{min-height:0} .chat{min-height:0;scroll-behavior:auto}
+header{padding-top:max(12px,env(safe-area-inset-top));flex-shrink:0}
+.head b{letter-spacing:-.3px}.head small{font-size:11px}
+.chips{flex-shrink:0;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.composer{flex-shrink:0;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+.composer input{border-radius:24px}.send{border-radius:50%;width:48px;height:48px;padding:0;flex-shrink:0}
+.message{box-shadow:0 2px 8px #0000000a}.message a{color:var(--accent);word-break:break-word}
+.typing{display:flex;gap:5px;align-items:center;padding:8px 0}.typing i{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:bounce 1s infinite alternate}.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}@keyframes bounce{to{opacity:.25;transform:translateY(-5px)}}
+.source{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.source a{display:inline-block;padding:8px 11px;background:var(--panel);border:1px solid var(--border);border-radius:12px;text-decoration:none;font-size:13px}
+#stopBtn{display:none;background:#b94444;color:white;border-radius:13px;padding:9px 12px}#stopBtn.show{display:block}
+@media(min-width:750px){.composer,.chips{padding-left:max(20px,calc((100vw - 850px)/2));padding-right:max(20px,calc((100vw - 850px)/2))}}
+@media(max-width:390px){header{gap:7px;padding-left:10px;padding-right:10px}.head b{font-size:17px}.head small{font-size:10px}header button{padding:8px}.logo{width:38px;height:38px}}
+.message.bot.streaming{position:relative}.message.bot.streaming .stream-cursor{display:inline-block;width:2px;height:1.05em;background:var(--accent);margin-left:2px;vertical-align:-.18em;animation:blink .7s steps(1) infinite}@keyframes blink{50%{opacity:0}}@media(prefers-reduced-motion:reduce){.stream-cursor{animation:none!important}}
+ .history-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;max-height:55dvh;overflow:auto}.history-row{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:12px;padding:5px}.history-row button{margin:0}.history-open{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-delete{color:#ff9e9e!important}.head small{font-size:11px}header{gap:7px}header button{padding:9px} 
+#profileBtn{font-size:15px;max-width:105px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#voiceBtn{flex-shrink:0;width:45px;height:45px;border-radius:50%;background:var(--bubble);color:var(--text);font-size:22px}
+#voiceBtn.listening{background:#d94355;color:white;animation:pulse 1s infinite alternate}
+@keyframes pulse{to{box-shadow:0 0 0 7px #d9435525}}
+#profileDialog label{display:block;margin:12px 0 3px;color:var(--muted);font-size:13px}
+#profileDialog select,#profileDialog textarea{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;padding:11px}
+#profileDialog textarea{min-height:75px;resize:vertical}
+.profile-actions{display:flex;flex-wrap:wrap;gap:5px}
+
+#photoBtn{flex-shrink:0;width:45px;height:45px;border-radius:50%;background:var(--bubble);color:var(--text);font-size:23px}
+#photoInput{display:none}.photo-preview{max-width:220px;max-height:230px;border-radius:12px;display:block;margin-top:8px;object-fit:contain}.photo-note{font-size:12px;color:var(--muted);margin-top:7px}.photo-draft{display:none;align-items:center;gap:10px;padding:8px 14px;background:var(--panel);font-size:13px}.photo-draft img{width:48px;height:48px;object-fit:cover;border-radius:8px}.photo-draft button{margin-left:auto;background:var(--bubble);color:var(--text);border-radius:8px;padding:7px 10px}
+
+.quiz-card{align-self:flex-start;width:min(95%,560px);border:1px solid var(--border);border-radius:17px;background:var(--bubble);padding:15px;display:grid;gap:9px}.quiz-card button{background:var(--panel);color:var(--text);padding:11px;text-align:left;border:1px solid var(--border);border-radius:11px}.quiz-card button:disabled{opacity:.65}.quiz-card .correct{border-color:#36c992}.quiz-card .wrong{border-color:#ed8c8c}.quiz-card small{color:var(--muted)}#toolsBtn{background:var(--bubble);color:var(--text);border-radius:12px;padding:9px;font-size:18px}
+.toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toolgrid button{margin:0;text-align:left;min-height:52px}
+#tasksList{max-height:35dvh;overflow:auto}.taskrow{display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid var(--border)}.taskrow span{flex:1}.taskrow.done span{text-decoration:line-through;opacity:.6}
+#taskText{width:100%}#ocrStatus{font-size:12px;color:var(--muted)}
+ .work-status{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:7px;white-space:normal}.work-step{display:flex;align-items:center;gap:8px}.work-step.current{color:var(--text)}.work-step.done .work-mark{color:var(--accent)}.work-mark{width:18px;flex-shrink:0;text-align:center}.work-step.current .work-mark{animation:spin 1.2s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+.smart-widget{align-self:flex-start;width:min(96%,520px);background:var(--bubble);border:1px solid var(--border);border-radius:18px;padding:15px;display:grid;gap:10px}
+.smart-widget h3{margin:0;font-size:17px}.smart-widget label{font-size:13px;color:var(--muted)}
+.smart-widget input,.smart-widget select{width:100%;min-width:0;border-radius:11px;padding:11px;background:var(--bg);color:var(--text);border:1px solid var(--border);font-size:16px}
+.smart-widget button{padding:11px;border-radius:11px;background:var(--accent);color:#083e2c;font-weight:700}
+.smart-widget .widget-result{white-space:pre-wrap;line-height:1.5}.smart-widget .widget-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+/* 3.2.1: адаптация для узких экранов */
+header{min-width:0;flex-wrap:wrap;gap:6px;padding:9px 10px}
+.logo{flex:0 0 35px;width:35px;height:35px;font-size:21px}
+.head{flex:1 1 145px;min-width:0}
+.head b{font-size:17px;white-space:nowrap}
+.head small{font-size:10px;line-height:1.25;overflow-wrap:anywhere}
+header button{flex:0 0 auto;padding:8px;font-size:16px}
+#profileBtn{max-width:100px}
+.composer{min-width:0;gap:5px;padding:9px 7px}
+.composer input{flex:1 1 0;min-width:0;width:0;padding:11px;font-size:15px}
+#photoBtn,#voiceBtn{width:38px;height:38px;font-size:19px}
+.send{width:41px;height:41px;font-size:20px}
+@media(max-width:420px){header{justify-content:flex-start}.head{flex-basis:calc(100% - 50px)}header button{font-size:16px}.hint{font-size:10px}}
+
+/* 3.2.2: компактная шапка, без растягивания страницы */
+html,body,.app{width:100%;max-width:100%;overflow-x:hidden}
+header{display:grid!important;grid-template-columns:36px minmax(0,1fr) repeat(6,35px);gap:4px!important;align-items:center;flex-wrap:nowrap!important;padding:8px 6px!important;min-height:58px}
+header .logo{width:34px;height:34px;font-size:20px;min-width:0}
+header .head{min-width:0;flex:auto!important;overflow:hidden}
+header .head b{display:block;font-size:15px!important;white-space:nowrap}
+header .head small{display:block;font-size:9px!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
+header button{min-width:0;width:35px;height:35px;max-width:35px!important;overflow:hidden;padding:0!important;font-size:17px!important;display:grid;place-items:center;border-radius:10px}
+#profileBtn{font-size:0!important}#profileBtn::first-letter{font-size:17px}
+.chat{width:100%;min-width:0}.composer{width:100%;min-width:0;gap:5px!important;padding:8px 7px!important}
+.composer #input{width:0!important;flex:1 1 0!important;min-width:0!important;padding:10px!important}
+#photoBtn,#voiceBtn{flex:0 0 36px!important;width:36px!important;height:36px!important}
+.composer .send{flex:0 0 40px!important;width:40px!important;height:40px!important}
+@media(max-width:420px){header{grid-template-columns:32px minmax(0,1fr) repeat(6,30px);gap:3px!important}header button{width:30px;height:32px;font-size:15px!important}.logo{width:31px!important;height:31px!important}.head b{font-size:14px!important}}
+
+/* 3.3: фирменная звезда только при ожидании ответа */
+.ai-wait{display:flex;align-items:center;gap:12px;min-height:62px;white-space:normal}
+.ai-star{font-size:35px;line-height:1;color:#fff;text-shadow:0 0 8px #fff,0 0 22px #36c992;animation:ai-star-move 1.65s ease-in-out infinite alternate;display:inline-block;transform-origin:center}
+.ai-wait-label{font-size:13px;color:var(--muted)}
+@keyframes ai-star-move{0%{transform:rotate(-17deg) scale(.82);opacity:.75}100%{transform:rotate(18deg) scale(1.15);opacity:1}}
+@media(prefers-reduced-motion:reduce){.ai-star{animation:none}}
+/* Сохраняем управление доступным на узком экране */
+header{grid-template-columns:32px minmax(0,1fr) repeat(6,30px)!important;gap:3px!important}
+header button{min-width:0!important;width:30px!important;max-width:30px!important}
+header .head b{font-size:14px!important}
+header .head small{font-size:9px!important}
+@media(max-width:390px){header{grid-template-columns:29px minmax(0,1fr) repeat(6,28px)!important;gap:2px!important}header button{width:28px!important;max-width:28px!important}}
+
+/* 3.5: быстрые действия, доступный интерфейс и голос */
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;white-space:normal}
+.quick-actions button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:16px;padding:7px 10px;font-size:12px}
+.quick-actions button:focus-visible{outline:2px solid var(--accent)}
+#speechToggle{font-size:14px}
+#speechToggle[aria-pressed="true"]{background:var(--accent);color:#083e2c}
+.widget-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.widget-menu button{background:var(--bubble);color:var(--text);border:1px solid var(--border);padding:12px;border-radius:12px;text-align:left}
+@media(max-width:420px){header{grid-template-columns:32px minmax(0,1fr) repeat(6,30px)!important}#speechToggle{display:none}}
+.cooking-card .cooking-progress{color:var(--accent);font-size:13px;font-weight:700}.cooking-card button:disabled{opacity:.45;cursor:default}
+.meal-options .widget-row{display:flex;flex-wrap:wrap}.meal-options .widget-row button{flex:1;min-width:110px}.meal-options>button{text-align:left}
+</style>
+<style>
+.family-tabs{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}.family-tabs button{flex:1;min-width:95px}.family-tabs button.active{background:var(--accent);color:#083e2c}.family-panel{display:none}.family-panel.active{display:block}.family-field{width:100%;margin:6px 0 10px}.family-row{display:flex;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.family-row span{flex:1;overflow-wrap:anywhere}.family-row button{margin:1px;padding:7px}.family-panel select,.family-panel textarea,.family-panel input{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:16px;width:100%}.family-panel textarea{min-height:70px}.family-panel .primary{background:var(--accent);color:#083e2c}.family-note{font-size:12px;color:var(--muted)}#familyDialog{max-height:90dvh;overflow:auto;width:min(95vw,530px)}
+</style></head>
+<body>
+<div class="app"><header><div class="logo">F</div><div class="head"><b>Family AI</b><small>● Локальный помощник · версия 4.0 · диалоги · интернет</small></div><button id="profileBtn" title="Член семьи">👤 Гость</button><button id="historyBtn" title="История чатов">☰</button><button id="learnBtn" title="Научить ответу">＋</button><button id="themeBtn" title="Тема">☼</button><button id="toolsBtn" title="Инструменты">▦</button><button id="settingsBtn" title="Настройки">⚙</button></header>
+<main class="chat" id="chat" aria-live="polite"></main>
+<div class="chips"><button data-prompt="Что приготовить на завтрак?">🥣 Завтрак</button><button data-prompt="Что приготовить на обед?">🍲 Обед</button><button data-prompt="Что приготовить на ужин?">🍝 Ужин</button><button id="webMode" title="Переключить интернет-поиск">🌐 Интернет: ВКЛ</button><button data-prompt="Привет">Привет 👋</button><button data-prompt="Предложи тему">💬 Темы</button><button data-prompt="25*(8+2)">🧮 Пример</button><button data-prompt="Мои дела">📝 Дела</button><button data-prompt="Начни режим репетитор">📚 Репетитор</button><button data-prompt="Помощь">❔ Команды</button><button data-prompt="Кто такой Пушкин?">📚 Пушкин</button></div>
+<div id="photoDraft" class="photo-draft"><img id="photoThumb" alt="Выбранная фотография"><span>📷 Фото готово к отправке</span><button id="removePhoto" type="button">Убрать</button></div>
+<form class="composer" id="form"><input id="input" placeholder="Напиши сообщение..." autocomplete="off" maxlength="1000" aria-label="Сообщение"><button id="photoBtn" type="button" title="Прикрепить фотографию" aria-label="Прикрепить фотографию">＋</button><input type="file" id="photoInput" accept="image/*"><button id="voiceBtn" type="button" title="Продиктовать сообщение" aria-label="Продиктовать сообщение">🎙</button><button id="stopBtn" type="button">■ Стоп</button><button class="send" type="submit" aria-label="Отправить">➤</button></form><div class="hint">Анимация ответа · плавная прокрутка · фото распознаётся локально после загрузки библиотеки.</div></div>
+<dialog id="profileDialog"><h3>👨‍👩‍👧‍👦 Для кого чат?</h3>
+<p>Каждый член семьи может иметь свои интересы и отдельную историю чатов. Данные хранятся только в этом браузере.</p>
+<label for="profileSelect">Выбери пользователя</label><select id="profileSelect"></select>
+<label for="profileName">Имя нового пользователя</label><input id="profileName" maxlength="40" placeholder="Например, Бабушка">
+<label for="profileInterests">Увлечения (можно оставить пустым)</label><textarea id="profileInterests" maxlength="400" placeholder="Садоводство, книги, кулинария..."></textarea>
+<div class="profile-actions"><button class="primary" id="saveProfile">Сохранить / создать</button><button id="switchProfile">Переключиться</button><button id="deleteProfile">Удалить профиль</button></div><button id="closeProfile">Закрыть</button>
+</dialog>
+<dialog id="historyDialog"><h3>💬 История чатов</h3><button class="primary" id="newChatBtn">＋ Новый чат</button><div id="historyList" class="history-list"></div><button id="closeHistory">Закрыть</button></dialog>
+<dialog id="learnDialog"><h3>Научить бота</h3><p>Добавь фразу и ответ. Family AI попробует узнавать и похожие формулировки. Ответы сохраняются на устройстве.</p><input id="question" placeholder="Вопрос или фраза"><input id="answer" placeholder="Ответ бота"><button class="primary" id="saveLearn">Сохранить</button><button id="cancelLearn">Отмена</button></dialog>
+<dialog id="toolsDialog"><h3>🧰 Инструменты Family AI</h3><div class="toolgrid"><button id="tutorTool">📚 Репетитор</button><button id="tasksTool">📝 Мои дела</button><button id="memoryTool">🧠 Что я помню?</button><button id="ocrTool">📷 Прочитать фото</button><button id="quizTool">🧩 Тесты</button><button id="weatherTool">🌤️ Погода</button><button id="familyTool">🏡 Семейный центр</button><button id="widgetTool">🧩 Виджеты</button></div><p id="ocrStatus">Распознавание текста загружается из интернета при первом использовании. Фотографии не отправляются на сервер приложения.</p><button id="closeTools">Закрыть</button></dialog>
+<dialog id="widgetMenu"><h3>🧩 Выбери виджет</h3><div class="widget-menu"><button data-widget="calculator">🧮 Калькулятор</button><button data-widget="timer">⏱️ Таймер</button><button data-widget="converter">📏 Конвертер</button><button data-widget="harvest">🌱 Урожай</button></div><button id="closeWidgetMenu">Закрыть</button></dialog>
+<dialog id="tasksDialog"><h3>📝 Личные дела</h3><p>Список отдельный для каждого профиля и хранится на этом устройстве.</p><input id="taskText" maxlength="180" placeholder="Например, повторить историю"><button class="primary" id="addTask">Добавить</button><div id="tasksList"></div><button id="closeTasks">Закрыть</button></dialog>
+<dialog id="settingsDialog"><h3>Настройки</h3><p>Переписка, фото, списки дел и изученные ответы хранятся локально в браузере. Для распознавания текста с фотографий загружается Tesseract.js с CDN; само фото не отправляется сервису распознавания. Распознавание может ошибаться. Интернет-запросы отправляются Википедии; Google открывается только по нажатию ссылки. При очистке данных сайта они могут исчезнуть.</p><button id="exportBtn">Экспорт переписки</button><button id="clearBtn">Очистить переписку</button><button id="clearLearnBtn">Очистить изученные ответы</button><button id="speechToggle" type="button" aria-pressed="false">🔊 Озвучивание ответов: выкл</button><button id="autoSearchToggle" type="button" aria-pressed="false">🌐 Автопоиск для вопросов: выкл</button><button id="closeSettings">Закрыть</button></dialog>
+<dialog id="familyDialog"><h3>🏡 Семейный центр</h3><p class="family-note">Данные хранятся в этом браузере. Личные записи видны только в выбранном профиле; общие дела — всем пользователям устройства.</p>
+<div class="family-tabs"><button type="button" data-ft="reminders" class="active">🔔 Напоминания</button><button type="button" data-ft="shopping">🛒 Покупки</button><button type="button" data-ft="recipes">🍲 Рецепты</button><button type="button" data-ft="calendar">📅 План</button></div>
+<section class="family-panel active" data-fp="reminders"><h4>Мои напоминания</h4><input id="reminderText" class="family-field" maxlength="180" placeholder="Что напомнить?"><label>Дата и время <input id="reminderWhen" class="family-field" type="datetime-local"></label><button class="primary" id="reminderAdd">Добавить напоминание</button><div id="reminderList"></div><p class="family-note">Напоминания проверяются, пока страница открыта. После закрытия браузера системные уведомления не гарантируются.</p></section>
+<section class="family-panel" data-fp="shopping"><h4>Общий список покупок</h4><input id="shoppingText" maxlength="120" placeholder="Например, молоко"><button class="primary" id="shoppingAdd">Добавить</button><div id="shoppingList"></div></section>
+<section class="family-panel" data-fp="recipes"><h4>Помощник по рецептам</h4><p class="family-note">Выбери блюдо или введи продукты через запятую.</p><select id="recipeSelect"></select><button class="primary" id="recipeShow">Показать рецепт</button><textarea id="ingredientsInput" placeholder="Что есть дома? Например: яйца, молоко, картофель"></textarea><button id="recipeFind">Подобрать по продуктам</button><div id="recipeResult" style="white-space:pre-wrap;line-height:1.5;margin-top:10px"></div></section>
+<section class="family-panel" data-fp="calendar"><h4>Семейный планировщик</h4><input id="eventText" maxlength="180" placeholder="Событие или семейное дело"><label>Дата <input id="eventDate" type="date"></label><label>Время (необязательно) <input id="eventTime" type="time"></label><label><input id="eventShared" type="checkbox" style="width:auto"> Общее для всей семьи</label><button class="primary" id="eventAdd">Добавить в план</button><div id="eventList"></div></section>
+<button id="familyClose">Закрыть</button></dialog>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const TASKS_KEY='vadim-ai-v2-tasks';let tasksData=load(TASKS_KEY,{});
+let tutorMode={};let ocrBusy=false;
+function myTasks(){return tasksData[activeProfileId]||(tasksData[activeProfileId]=[])}
+function saveTasks(){try{localStorage.setItem(TASKS_KEY,JSON.stringify(tasksData))}catch{alert('Не хватает места для сохранения задач')}}
+function renderTasks(){const list=$('tasksList');list.replaceChildren();for(const task of myTasks()){
+ const row=document.createElement('div');row.className='taskrow'+(task.done?' done':'');
+ const check=document.createElement('input');check.type='checkbox';check.checked=task.done;check.onchange=()=>{task.done=check.checked;saveTasks();renderTasks()};
+ const span=document.createElement('span');span.textContent=task.text;
+ const del=document.createElement('button');del.textContent='✕';del.onclick=()=>{tasksData[activeProfileId]=myTasks().filter(x=>x.id!==task.id);saveTasks();renderTasks()};row.append(check,span,del);list.append(row)
+ }if(!myTasks().length){const p=document.createElement('p');p.textContent='Пока дел нет 😊';list.append(p)}}
+function memorySummary(){const p=currentProfile();const interests=p.interests.trim();const pending=myTasks().filter(x=>!x.done).length;
+ return '🧠 Профиль: '+p.name+'\nИнтересы: '+(interests||'пока не указаны')+'\nНезавершённых дел: '+pending+'\nЯ помню только то, что ты указал(а) в профиле или рассказал(а) мне в знакомых формулировках. Другие чаты я не анализирую автоматически.'}
+function tutorReply(raw){const s=normalize(raw),state=tutorMode[activeProfileId];
+ if(/(?:начни|включи|давай|хочу|режим).*?(?:репетитор|викторин|провер|математик)/i.test(s)||/^(?:репетитор|викторина)$/i.test(s)){
+ tutorMode[activeProfileId]={step:0,correct:0};return '📚 Давай потренируем математику! Я задам три вопроса по одному.\nПервый: сколько будет 7 × 8? 😊'}
+ if(!state)return null;
+ const answers=[56,45,24],questions=['Сколько будет 9 × 5?','Сколько будет 72 ÷ 3?'];
+ const expected=answers[state.step],value=Number(s.replace(/[^0-9-]/g,''));
+ const right=Number.isFinite(value)&&value===expected;if(right)state.correct++;
+ const note=right?'Верно! 🎉':'Пока не совсем: правильный ответ — '+expected+'. Разберём, если хочешь!';state.step++;
+ if(state.step>=3){const score=state.correct;delete tutorMode[activeProfileId];return note+'\nВикторина окончена: '+score+' из 3. '+(score===3?'Отличная работа! 🌟':'Можем потренироваться ещё! 😊')}
+ return note+'\nСледующий вопрос: '+questions[state.step-1]}
+function plannerReply(raw){const s=normalize(raw);
+ if(/^(?:мои дела|список дел|что мне сделать|покажи задачи)/.test(s)){const a=myTasks().filter(x=>!x.done);return a.length?'📝 Твои дела:\n'+a.map((x,i)=>(i+1)+'. '+x.text).join('\n'):'📝 Пока нет незавершённых дел. Добавь их через кнопку ▦.'}
+ if(/^(?:что ты обо мне помнишь|что ты помнишь обо мне|мои интересы)/.test(s))return memorySummary();
+ if(/^(?:добавь (?:дело|задачу)|запомни задачу|мне нужно сделать)\s+/.test(s)){
+ const t=raw.replace(/^(?:добавь (?:дело|задачу)|запомни задачу|мне нужно сделать)\s+/i,'').trim().slice(0,180);
+ if(t){myTasks().push({id:Date.now()+'-'+Math.random(),text:t,done:false});saveTasks();return 'Добавил(а) в твой список: «'+t+'» 📝'} }
+ return null}
+let ocrWorker=null,ocrWorkerPromise=null,ocrProgress=()=>{},ocrGeneration=0;
+function loadOCRLibrary(){return new Promise((resolve,reject)=>{if(window.Tesseract)return resolve();const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(Error('Не удалось загрузить библиотеку OCR'));document.head.append(script)})}
+async function getOCRWorker(){
+ if(ocrWorker)return ocrWorker;
+ if(!ocrWorkerPromise){
+  ocrWorkerPromise=(async()=>{
+   await loadOCRLibrary();
+   const worker=await Tesseract.createWorker('rus+eng',1,{logger:m=>ocrProgress(m)});
+   ocrWorker=worker;return worker;
+  })().catch(e=>{ocrWorkerPromise=null;throw e});
+ }
+ return ocrWorkerPromise;
+}
+async function recognizePhoto(data){const worker=await getOCRWorker();const result=await worker.recognize(data);return (result.data?.text||'').trim()}
+
+
+const PROFILES='vadim-ai-v1-profiles',ACTIVE_PROFILE='vadim-ai-active-profile';
+const STORAGE='vadim-ai-v1-messages',CHATS='vadim-ai-v1-chat-history',LEARN='vadim-ai-v1-learn',THEME='vadim-ai-v1-theme',WEB='vadim-ai-v1-web';
+function load(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return value??fallback}catch{return fallback}}
+let learned=load(LEARN,{});
+let profiles=load(PROFILES,[{id:'default',name:'Вадим',interests:''}]);
+if(!Array.isArray(profiles)||!profiles.length)profiles=[{id:'default',name:'Вадим',interests:''}];
+let activeProfileId=load(ACTIVE_PROFILE,'default');
+if(!profiles.some(p=>p.id===activeProfileId))activeProfileId=profiles[0].id;
+const currentProfile=()=>profiles.find(p=>p.id===activeProfileId)||profiles[0];
+function saveProfiles(){localStorage.setItem(PROFILES,JSON.stringify(profiles));localStorage.setItem(ACTIVE_PROFILE,JSON.stringify(activeProfileId));$('profileBtn').textContent='👤 '+currentProfile().name;}
+let chatSessions=load(CHATS,[]);
+if(!Array.isArray(chatSessions))chatSessions=[];
+// Перенос старой переписки в историю при первом обновлении.
+if(!localStorage.getItem(CHATS)){
+ const old=load(STORAGE,[]);
+ if(Array.isArray(old)&&old.length)chatSessions.push({id:'legacy',profileId:'default',title:'Предыдущая переписка',created:Date.now()-1000,messages:old});
+}
+let activeChatId=null;
+let messages=[];
+function saveSessions(){try{localStorage.setItem(CHATS,JSON.stringify(chatSessions.slice(-80)))}catch(e){console.warn('Не удалось сохранить историю',e)}}
+function currentSession(){return chatSessions.find(c=>c.id===activeChatId)}
+function newChat(){
+ cancelPending();
+ const c={id:'chat-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),title:'Новый чат',created:Date.now(),profileId:activeProfileId,messages:[]};
+ chatSessions.unshift(c);activeChatId=c.id;messages=c.messages;saveSessions();renderAll();$('historyDialog').close();
+}
+function openChat(id){const c=chatSessions.find(x=>x.id===id&&(x.profileId||'default')===activeProfileId);if(!c)return;cancelPending();activeChatId=id;messages=c.messages;renderAll();$('historyDialog').close()}
+function cancelPending(){requestId++;typingToken++;if(pendingController){pendingController.abort();pendingController=null}document.querySelector('.loading')?.remove();document.querySelector('.streaming')?.remove();$('stopBtn')?.classList.remove('show')}
+function showHistory(){
+ const list=$('historyList');list.replaceChildren();
+ for(const c of chatSessions.filter(c=>(c.profileId||'default')===activeProfileId)){
+  const row=document.createElement('div');row.className='history-row';
+  const open=document.createElement('button');open.className='history-open';open.textContent=(c.id===activeChatId?'● ':'')+(c.title||'Новый чат');open.onclick=()=>openChat(c.id);
+  const del=document.createElement('button');del.className='history-delete';del.textContent='🗑';del.title='Удалить чат';del.onclick=()=>{if(!confirm('Удалить этот чат?'))return;chatSessions=chatSessions.filter(x=>x.id!==c.id);if(activeChatId===c.id){activeChatId=null;messages=[];newChat()}else saveSessions();showHistory()};
+  row.append(open,del);list.append(row);
+ }
+}
+
+if(!Array.isArray(messages))messages=[];
+if(!learned||typeof learned!=='object'||Array.isArray(learned))learned={};
+if(load(THEME,'dark')==='light')document.body.classList.add('light');
+const chat=$('chat');
+let webEnabled=load(WEB,true);
+let pendingController=null, requestId=0;
+function updateWebButton(){ $('webMode').textContent='🌐 Интернет: '+(webEnabled?'ВКЛ':'ВЫКЛ'); }
+$('webMode').onclick=()=>{webEnabled=!webEnabled;try{localStorage.setItem(WEB,JSON.stringify(webEnabled))}catch{}updateWebButton()};
+updateWebButton();
+function searchPhrase(text){return text.replace(/^(расскажи(?: мне)?(?: пожалуйста)?(?: про| о)?|что такое|кто такой|кто такая|найди(?: информацию)?(?: про| о)?|объясни(?: что такое)?|что ты знаешь(?: про| о)?|поищи(?: про| о)?)\s+/i,'').replace(/[?!]+$/,'').trim().slice(0,130)||text.slice(0,130)}
+// Краткая выжимка из вступления статьи: 1–3 полных предложения.
+// Это извлечение, а не генерация нейросетью.
+function shortSummary(raw){
+ const clean=String(raw||'').replace(/\[[^\]]{1,35}\]/g,'').replace(/\s+/g,' ').trim();
+ if(!clean)return 'Краткое описание недоступно.';
+ const sentences=clean.match(/[^.!?]+(?:[.!?]+|$)/g)||[clean];
+ const result=[];
+ for(const sentence of sentences){
+  const part=sentence.trim();
+  if(!part)continue;
+  if(result.length && result.join(' ').length+part.length>330)break;
+  result.push(part);
+  if(result.length>=3 || result.join(' ').length>=220)break;
+ }
+ let summary=result.join(' ').trim();
+ if(!summary)summary=clean.slice(0,330).trim();
+ return summary;
+}
+async function internetAnswer(question,signal){
+ const term=searchPhrase(question).replace(/^(?:поищи|найди)(?: в (?:поиске|интернете))?\s*/i,'').replace(/,?\s*(?:поищи|найди)(?: в (?:поиске|интернете))?\s*(?:что за|что такое)?/i,' ').replace(/\bчто за порода\b/i,'порода собак').trim();
+ const api='https://ru.wikipedia.org/w/api.php?origin=*&format=json&formatversion=2&action=query&generator=search&gsrsearch='+encodeURIComponent(term)+'&gsrlimit=1&prop=extracts|info&exintro=1&explaintext=1&exchars=1800&inprop=url';
+ const response=await fetch(api,{signal});
+ if(!response.ok)throw Error('HTTP '+response.status);
+ const data=await response.json();
+ const page=data.query?.pages?.[0];
+ if(!page||page.missing)return {text:'По запросу «'+term+'» статья не найдена. Попробуй другой запрос.',google:term};
+ const description=(page.extract||'').trim();
+ return {text:'🌐 '+page.title+'\n\n'+shortSummary(description),url:page.fullurl||'https://ru.wikipedia.org/wiki/'+encodeURIComponent(page.title.replace(/ /g,'_')),google:term};
+}
+// Family AI 2.6: погода из Open-Meteo, четыре города по умолчанию.
+const WEATHER_CITIES=[
+ {name:'Сочи',lat:43.5855,lon:39.7231,forms:['сочи']},
+ {name:'Северодвинск',lat:64.5635,lon:39.8302,forms:['северодвинск','северодвинске','северодвинска']},
+ {name:'Москва',lat:55.7558,lon:37.6173,forms:['москва','москве','москвы','москву']},
+ {name:'Брянск',lat:53.2521,lon:34.3717,forms:['брянск','брянске','брянска']}
+];
+function isWeatherQuestion(raw){return /(?:погод|температур|градус|дожд|снег|осадк|прогноз|похолода|потепле)/i.test(raw)}
+function weatherTargets(raw){const q=raw.toLowerCase().replace(/ё/g,'е');const found=WEATHER_CITIES.filter(c=>c.forms.some(f=>new RegExp('(^|[^а-я])'+f+'(?=$|[^а-я])').test(q)));return found.length?found:WEATHER_CITIES}
+function weatherLabel(code){if(code===0)return 'Ясно ☀️';if(code<=3)return 'Переменная облачность ⛅';if(code<=48)return 'Туман 🌫️';if(code<=67)return 'Дождь 🌧️';if(code<=77)return 'Снег ❄️';if(code<=82)return 'Ливни 🌧️';if(code<=86)return 'Снегопад ❄️';if(code>=95)return 'Гроза ⛈️';return 'Облачно ☁️'}
+async function getWeather(city,signal,tomorrow){
+ const params=new URLSearchParams({latitude:city.lat,longitude:city.lon,current:'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',daily:'temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code',forecast_days:'3',timezone:'auto'});
+ const res=await fetch('https://api.open-meteo.com/v1/forecast?'+params,{signal});if(!res.ok)throw Error('HTTP '+res.status);
+ const data=await res.json();if(!data.current||!data.daily)throw Error('Нет данных прогноза');
+ const today=data.daily;
+ const idx=tomorrow?1:0;const fmt=n=>Math.round(n)+'°C';
+ return '📍 '+city.name+'\n'+(tomorrow?'Завтра: ':'Сейчас: ')+(tomorrow?weatherLabel(today.weather_code[idx]):weatherLabel(data.current.weather_code))+'\n'+(tomorrow?'Температура: '+fmt(today.temperature_2m_min[1])+'…'+fmt(today.temperature_2m_max[1]):'Температура: '+fmt(data.current.temperature_2m))+'\n'+(tomorrow?'Вероятность осадков: '+(today.precipitation_probability_max[1]??'—')+'%':'Сегодня: '+fmt(today.temperature_2m_min[0])+'…'+fmt(today.temperature_2m_max[0])+'; ветер '+Math.round(data.current.wind_speed_10m)+' км/ч')+'\n'+(!tomorrow?'Завтра: '+fmt(today.temperature_2m_min[1])+'…'+fmt(today.temperature_2m_max[1])+'; осадки '+(today.precipitation_probability_max[1]??'—')+'%':'');
+}
+async function weatherAnswer(raw,signal){const cities=weatherTargets(raw);const tomorrow=/завтра/i.test(raw);const results=await Promise.allSettled(cities.map(c=>getWeather(c,signal,tomorrow))); return '🌤️ Погода · Open-Meteo\n\n'+results.map((r,i)=>r.status==='fulfilled'?r.value:'📍 '+cities[i].name+'\nНе удалось получить прогноз.').join('\n\n')+'\n\nДанные обновляются при запросе.'}
+function appendLinks(element,info){
+ const links=document.createElement('div');links.className='source';
+ if(info.url){const a=document.createElement('a');a.href=info.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='📖 Источник';links.append(a)}
+ const g=document.createElement('a');g.href='https://www.google.com/search?q='+encodeURIComponent(info.google||'');g.target='_blank';g.rel='noopener noreferrer';g.textContent='🔎 Искать в Google';links.append(g);
+ element.append(links);
+}
+
+let pendingPhoto=null;
+function resetPhoto(){pendingPhoto=null;$('photoInput').value='';$('photoDraft').style.display='none';$('photoThumb').removeAttribute('src')}
+$('photoBtn').onclick=()=>$('photoInput').click();
+$('removePhoto').onclick=resetPhoto;
+$('photoInput').onchange=async()=>{
+ const file=$('photoInput').files?.[0];if(!file)return;
+ if(!file.type.startsWith('image/')){alert('Выбери фотографию');return}
+ try{
+  const bitmap=await createImageBitmap(file);
+  const ratio=Math.min(1,1100/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*ratio));canvas.height=Math.max(1,Math.round(bitmap.height*ratio));
+  canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();
+  pendingPhoto=canvas.toDataURL('image/jpeg',0.68);
+  $('photoThumb').src=pendingPhoto;$('photoDraft').style.display='flex';
+ }catch(e){alert('Не удалось открыть фотографию: '+e.message)}
+};
+function persist(){const c=currentSession();if(!c)return;c.messages=messages.slice(-250);if(c.title==='Новый чат'){const first=messages.find(m=>m.role==='user');if(first)c.title=first.text.slice(0,42)}saveSessions()}
+function add(role,text,save=true,photo=null){const m={role,text:String(text),time:Date.now()};if(photo)m.photo=photo;if(save){messages.push(m);messages=messages.slice(-250);persist()}renderMessage(m)}
+function renderMessage(m){const div=document.createElement('div');div.className='message '+(m.role==='user'?'user':'bot');const who=document.createElement('div');who.className='who';who.textContent=m.role==='user'?'Ты':'Family AI';const body=document.createElement('div');body.textContent=m.text;div.append(who,body);if(m.role==='bot')attachQuickActions(div,m.text);if(m.photo){const img=document.createElement('img');img.className='photo-preview';img.src=m.photo;img.alt='Прикреплённая фотография';div.append(img)}chat.append(div)}
+function renderAll(){chat.replaceChildren();if(!messages.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='Привет! Я Family AI 🤖\nРасскажи, что тебе интересно, или спроси «Чем займёмся?».\nКнопка ＋ вверху позволяет научить меня ответам, а ＋ рядом с полем ввода — приложить фото.';chat.append(empty)}else messages.forEach(renderMessage)}
+const normalize=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[!?.,]+$/g,'').replace(/\s+/g,' ').trim();
+const knowledge=[
+{keys:['лиаз 5292','лиаз-5292','лиаз'],answer:'ЛиАЗ-5292 — семейство российских низкопольных городских автобусов большого класса. У разных модификаций отличаются двигатели, оснащение и другие характеристики.'},
+{keys:['паз вектор некст','паз vector next','вектор некст'],answer:'ПАЗ Vector NEXT — семейство автобусов Павловского автобусного завода. Такие автобусы используют на городских и пригородных маршрутах.'},
+{keys:['камаз вега','камаз-4280','вега 4280'],answer:'КАМАЗ-4280 «Вега» — автобус среднего класса. Могу обсудить его внешний вид, салон или идею модели из картона.'},
+{keys:['маз 203','маз-203'],answer:'МАЗ-203 — низкопольный городской автобус Минского автомобильного завода, выпускаемый в разных комплектациях.'},
+{keys:['маз 103','маз-103'],answer:'МАЗ-103 — городской автобус большого класса Минского автомобильного завода, известный на маршрутах многих городов.'},
+{keys:['волгабас','volgabus'],answer:'Volgabus — российский производитель автобусов. Можем поговорить о моделях, салонах и маршрутных табло.'},
+{keys:['маршрут','автобус'],answer:'🚌 Могу рассказать о маршрутах и моделях автобусов. Что именно интересно?'},
+{keys:['математик'],answer:'Я умею считать выражения с +, −, ×, ÷ и скобками. Например: (12+8)/4. Для дробей напиши пример в виде 1/2+1/3.'},
+{keys:['кто ты','как тебя зовут'],answer:'Я Family AI 3.9 — локальный чат-бот, работающий по правилам без подключения к нейросети.'},
+{keys:['что ты умеешь','помощь','команды'],answer:'Мои возможности:\n• простые вычисления: 12*(3+4), 1/2+1/3\n• тесты с выбором ответов\n• приветствия и общение по правилам\n• сохранение переписки\n• обучение: нажми ＋ и введи вопрос и ответ\n• смена темы и экспорт переписки\nЯ не подключён к настоящей ИИ-модели.'},
+{keys:['спасибо'],answer:'Пожалуйста! 😊'},
+{keys:['как дела'],answer:'Всё хорошо! 😊 Как проходит твой день?'},
+{keys:['привет','здравствуй','добрый день'],answer:'Привет! 👋 Я Family AI. Как дела? Чем тебе хотелось бы заняться?'},
+{keys:['пока','до свидания'],answer:'До встречи! 👋 Переписка сохранится в этом браузере.'}
+];
+function tokenizeMath(s){const tokens=s.match(/\d+(?:[.,]\d+)?|[()+\-*/×÷^]/g);if(!tokens||tokens.join('')!==s.replace(/\s/g,''))throw Error('В выражении есть неизвестные символы');return tokens.map(t=>t.replace(',','.'))}
+function calculate(input){let s=input.replace(/^(сколько будет|посчитай|вычисли|реши|пример)\s*/i,'').replace(/[=?]\s*$/,'').trim();if(!/^[\d\s.,()+\-*/×÷^]+$/.test(s)||!/[+\-*/×÷^]/.test(s)||s.length>120)return null;const t=tokenizeMath(s);let i=0;function atom(){if(t[i]==='+'){i++;return atom()}if(t[i]==='-'){i++;return -atom()}if(t[i]==='('){i++;const v=expr();if(t[i++]!==')')throw Error('Не закрыта скобка');return v}const n=t[i++];if(!n||!/^\d+(\.\d+)?$/.test(n))throw Error('Ошибка в числе');return Number(n)}function power(){let x=atom();if(t[i]==='^'){i++;const y=power();if(Math.abs(y)>20||Math.abs(x)>1e8)throw Error('Слишком большая степень');x=Math.pow(x,y)}return x}function term(){let x=power();while(['*','/','×','÷'].includes(t[i])){const op=t[i++],y=power();if((op==='/'||op==='÷')&&y===0)throw Error('На ноль делить нельзя');x=(op==='*'||op==='×')?x*y:x/y}return x}function expr(){let x=term();while(t[i]==='+'||t[i]==='-'){const op=t[i++],y=term();x=op==='+'?x+y:x-y}return x}const result=expr();if(i!==t.length)throw Error('Проверь скобки и знаки');if(!Number.isFinite(result)||Math.abs(result)>1e15)throw Error('Число слишком большое');return 'Ответ: '+Number(result.toPrecision(12)).toLocaleString('ru-RU',{maximumFractionDigits:10})}
+// Живое общение: сначала определяем смысл реплики, а не отдельное слово.
+let conversationalTurn=0;
+function choose(arr){return arr[(conversationalTurn++)%arr.length]}
+// Небольшой контекст последнего вопроса — отдельно для каждого чата.
+const dialogueState={};
+function dialogue(){return dialogueState[activeChatId]||(dialogueState[activeChatId]={pending:null})}
+function everydayReply(raw){
+ const s=normalize(raw),d=dialogue();
+ if(/^(?:нет|неа|не хочу|не надо|не нужно|отмена|не сейчас|не интересно|неинтересно)$/.test(s)){
+  d.pending=null;return 'Хорошо, не будем. 💚 Можем поговорить о чём-нибудь другом.';
+ }
+ if(/^(?:да|ага|угу|конечно|давай|хорошо|ок|окей|согласен|согласна)$/.test(s)){
+  const pending=d.pending;d.pending=null;
+  if(pending==='activity')return 'Отлично! 😊 Выбери: загадка, викторина или небольшой творческий проект.';
+  if(pending==='talk')return 'Я слушаю. Что произошло?';
+  return 'Хорошо! 😊 Расскажи, что будем делать дальше.';
+ }
+ if(/^(?:не знаю|незнаю|без понятия|не определился|не определилась)$/.test(s))return 'Ничего страшного. Можем пока просто поговорить или выбрать что-то простое. 😊';
+ if(/^(?:помоги|поможешь|мне нужна помощь|можешь помочь)$/.test(s))return 'Конечно! С чем именно нужна помощь?';
+ if(/^(?:что делаешь|чем занят|чем занимаешься)$/.test(s))return 'Сейчас отвечаю на твоё сообщение. 😊 А чем занимаешься ты?';
+ if(/^(?:сколько времени|который час|сколько сейчас времени|какое сегодня число|какая сегодня дата|какой сегодня день)$/.test(s)){
+  const now=new Date();return /времени|час/.test(s)?'Сейчас '+new Intl.DateTimeFormat('ru-RU',{hour:'2-digit',minute:'2-digit'}).format(now)+' по времени устройства. 🕒':'Сегодня '+new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now)+'. 📅';
+ }
+ if(/(?:что приготовить|что можно приготовить|иде[ияю] (?:для|на) (?:завтрак|обед|ужин))/.test(s))return '🍽️ Можно приготовить омлет, макароны с овощами или запечённый картофель. Какие продукты есть дома?';
+ if(/(?:что надеть|как одеться)/.test(s))return 'Подскажу! Какая у вас погода и куда собираешься?';
+ if(/(?:сколько будет|посчитай|вычисли)/.test(s)&&!/[0-9]/.test(s))return 'Напиши числа и действие, например: 125 + 47. 🧮';
+ if(/(?:погода|температура на улице|будет ли дождь)/.test(s))return '🌤️ Для точного прогноза нужны город и свежие погодные данные. Пока у меня нет подключения к погодному сервису. В каком городе посмотреть погоду?';
+ if(/(?:распредели (?:мое |моё )?время|составь план дня|план на вечер|спланируй (?:мой )?день)/.test(s))return '📅 Помогу составить план! Сколько времени у тебя есть и какие дела нужно успеть?';
+ if(/(?:рассчитай урожай|калькулятор урожая|сколько (?:соберу|вырастет) (?:картошки|картофеля|овощей))/.test(s))return '🌱 Для примерного расчёта урожая напиши площадь участка в м² и ожидаемую урожайность в кг/м². Например: 100 м² и 3 кг/м².';
+ if(/(?:мне грустно|я грущу|мне плохо|я расстроен|я расстроена|я устал|я устала)/.test(s)){d.pending='talk';return 'Жаль, что сейчас непросто. 💚 Хочешь рассказать, что случилось, или лучше немного отвлечься?';}
+ if(/(?:мне скучно|скучно|предложи занятие|чем займемся|чем займёмся)/.test(s)){d.pending='activity';return 'Можем сыграть в загадки, устроить викторину или придумать небольшой проект. Хочешь? 😊';}
+ return null;
+}
+function chatReply(raw){
+ const s=normalize(raw);
+ if(/(?:чем (?:займемся|займёмся)|что (?:поделаем|будем делать)|предложи (?:занятие|идею)|что предлагаешь)/.test(s)){
+  const interests=currentProfile().interests.trim();
+  if(interests){const choices=interests.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+   const hobby=choices[conversationalTurn++%choices.length];
+   return `Есть идея! 😊 Ты рассказывал(а), что тебе интересно: ${interests}. Можем заняться темой «${hobby}», придумать небольшой проект или просто поболтать. А что тебе сейчас хочется?`;
+  }
+  return choose(['Давай подумаем вместе! 😊 Можем почитать, поиграть в слова, решить загадку или придумать что-то творческое. А чем ты увлекаешься?', 'Предлагаю выбрать: интересный факт, небольшая викторина или спокойный разговор. ✨ Что тебе ближе?']);
+ }
+ if(/(?:мне нравится|я увлекаюсь|мое хобби|моё хобби|люблю заниматься|я интересуюсь)/.test(s)){
+  const match=raw.match(/(?:мне нравится|я увлекаюсь|мо[её] хобби(?: —| -|:)?|люблю заниматься|я интересуюсь)\s+(.+)/i);
+  if(match){const hobby=match[1].replace(/[.!?]+$/,'').trim().slice(0,100);
+   const p=currentProfile();const items=p.interests.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+   if(hobby&&!items.some(x=>normalize(x)===normalize(hobby))){items.push(hobby);p.interests=items.join(', ');saveProfiles();}
+   return `Здорово! 😊 Я учту, что тебе интересно ${hobby}. Можем поговорить об этом подробнее или придумать занятие по теме.`;
+  }
+ }
+ const has=(re)=>re.test(s);
+ if(has(/(?:комплимент|похвалил|приятн|ты молодец|ты классн|ты круто|ты лучший|умница|ты хороший|молодец)/))return choose(['Ой, спасибо за добрые слова! 😊 Это очень приятно. Что будем делать дальше?','Спасибо! 💚 Здорово, что ты так считаешь. О чём поболтаем?','Как приятно это слышать! 😄 Спасибо тебе!']);
+ if(has(/(?:мне грустно|я грущу|плохо на душе|расстроил|обидно|я устал|устал сегодня)/))return choose(['Жаль, что день такой непростой. 💙 Хочешь рассказать, что случилось?','Понимаю. Иногда хочется просто немного отдохнуть. 🌿 Что сегодня утомило?','Сочувствую. 💙 Можем спокойно поговорить или переключиться на что-то интересное.']);
+ if(has(/(?:ура+|получилось|я сделал|я закончил|я справился|наконец-то)/))return choose(['Урааа! 🎉 Отличные новости! Расскажешь, что получилось?','Здорово! 😃 Ты постарался — есть повод порадоваться!','Класс! 🥳 Что будем делать дальше?']);
+ if(has(/(?:извини|прости|сорри)/))return 'Всё нормально! 😊 Не переживай. Продолжим?';
+ if(has(/(?:спасибо|благодарю|спс)/))return varied('thanks');
+ if(has(/(?:как дела|как поживаешь|как настроение)/))return choose(['Всё хорошо, спасибо, что спросил(а)! 😄 А как у тебя дела?','Готов общаться! 🤖✨ Как проходит твой день?','Отлично! ✨ Есть новости или новые идеи?']);
+ if(has(/^(?:привет|прив|здравствуй|здравствуйте|хай|добрый (?:день|вечер|утро))\b/))return varied('hello');
+ if(has(/(?:пока|до свидания|спокойной ночи)/))return 'До встречи! 👋 Хорошего отдыха!';
+ if(has(/(?:ты меня понимаешь|ты слушаешь|ты тут|ты здесь)/))return 'Я здесь и читаю твои сообщения. 😊 Рассказывай!';
+ if(has(/(?:домашн|урок|задани|упражнени|помоги с учебой|помоги с учёбой)/))return choose(['Конечно! 📚 Пришли фото задания или напиши его текст — разберём по шагам.','Давай разбираться! 😊 Какой предмет? Можешь приложить снимок упражнения.','Помогу с уроками! ✏️ Напиши условие или прикрепи фотографию.']);
+ if(has(/(?:мне скучно|скучно)/))return 'Давай придумаем занятие! 😄 Что тебе нравится: игры, творчество, загадки или что-то другое?';
+ if(has(/(?:шутк|анекдот|рассмеши)/))return choose(['Почему компьютер замёрз? Потому что забыл закрыть окна! 😄','Почему книга всегда спокойная? Потому что у неё всё по страницам! 😁']);
+ if(has(/(?:я тебя люблю|люблю тебя)/))return 'Спасибо за тёплые слова! 💚 Мне приятно, что тебе нравится наше общение. 😊';
+ if(has(/^(?:да|ага|конечно|точно|угу|нет|неа|ладно|ок|окей)[!. ]*$/))return choose(['Понял! 😊 Расскажешь подробнее?','Хорошо! 😃 Что делаем дальше?','Ясно! 💬 О чём поговорим?']);
+ if(has(/^(?:ахах|хаха|лол|😂|😆)/))return 'Ахаха! 😄 Хорошее настроение — это здорово!';
+ return null;
+}
+function factualQuestion(raw){return /^(?:кто (?:такой|такая|это)|что (?:такое|означает)|где |когда |почему |как (?:устроен|работает|появился)|расскажи (?:про|о)|найди |поищи |объясни |что ты знаешь)/i.test(raw.trim())}
+// Поиск похожих изученных фраз: работает локально, без нейросети.
+// Не смешиваем отрицания, числа и вопросы о разных предметах.
+function learnedTokens(text){
+ const aliases={
+  'поболтаем':'общаться','поболтать':'общаться','поговорим':'общаться','поговорить':'общаться',
+  'пообщаемся':'общаться','пообщаться':'общаться','общение':'общаться','общаться':'общаться',
+  'хочу':'давай','хотел':'давай','хотела':'давай','можем':'давай','давай':'давай',
+  'приветствую':'привет','здравствуй':'привет','здравствуйте':'привет',
+  'благодарю':'спасибо','спс':'спасибо',
+  'поможешь':'помощь','помоги':'помощь','помощи':'помощь',
+  'расскажи':'рассказать','расскажешь':'рассказать'
+ };
+ const ignored=new Set(['ну','же','пожалуйста','мне','мы','с','тобой','ты','я','а','может','да','ли','бы','немного','просто','хочется']);
+ return normalize(text).replace(/[^а-яa-z0-9\s-]/g,' ').split(/\s+/).filter(Boolean)
+  .map(w=>aliases[w]||w).filter(w=>!ignored.has(w));
+}
+function learnedSimilarReply(raw){
+ const query=learnedTokens(raw),keys=Object.keys(learned);
+ if(!query.length||!keys.length)return null;
+ // Отрицания и цифры должны совпадать буквально: «хочу» не равно «не хочу».
+ const negation=t=>/\b(?:не|нет|никогда|нельзя|без)\b/.test(normalize(t));
+ const numbers=t=>(normalize(t).match(/\d+(?:[.,]\d+)?/g)||[]).join('|');
+ let best=null,bestScore=0,secondScore=0;
+ for(const key of keys){
+  if(negation(raw)!==negation(key)||numbers(raw)!==numbers(key))continue;
+  const sample=learnedTokens(key);if(!sample.length)continue;
+  const a=new Set(query),b=new Set(sample);
+  const overlap=[...a].filter(x=>b.has(x)).length;
+  if(!overlap)continue;
+  const score=2*overlap/(a.size+b.size);
+  // Не подбираем ответ по одному общему слову в длинных запросах.
+  if(score>bestScore){secondScore=bestScore;bestScore=score;best=key}
+  else if(score>secondScore)secondScore=score;
+ }
+ if(best&&bestScore>=0.74&&bestScore-secondScore>=0.12)return learned[best];
+ return null;
+}
+// Темы для свободного общения. Игровые режимы удалены.
+const topics=['Книги и любимые истории 📚','Путешествия и интересные города 🌍','Кулинария и любимые блюда 🍲','Животные и природа 🐾','Фильмы и мультфильмы 🎬','Планы на выходные 🌿','Необычные вопросы и загадки 🧩'];
+// Разные формулировки для одинакового смысла — без изменения фактов.
+const replyVariants={
+ yes:['Да! 😊','Ага!','Совершенно верно!','Именно так!','Да, это так.','Конечно!','Верно! 💚','Да-да!','Точно!','Ты прав(а)!','Да, угадал(а)!','Подтверждаю!','Да, всё сходится.','Именно! 😄','Правильно!'],
+ no:['Нет.','Не совсем!','Нет, это не так.','Пока нет.','Не угадал(а)!','Нет 😊','Отрицательный ответ.','Нет, попробуй ещё.','Не-а!','Нет, но вопрос хороший.','Нет, идём дальше!','Не подходит.','Нет, это другой вариант.','Не в этот раз!','Нет 💚'],
+ unknown:['Не знаю наверняка.','Не могу подтвердить это.','У меня нет точных сведений.','Не уверен(а), поэтому не буду угадывать.','Сложно сказать достоверно.','Не располагаю таким фактом.','Пока не знаю ответа.','Это мне неизвестно.','Не хочу придумывать.','Нужно уточнение.','У меня недостаточно информации.','Не могу ответить точно.','Здесь я не уверен(а).','Этот факт не указан.','Пока не могу определить.'],
+ wrong:['Пока не угадал(а)!','Это не тот персонаж.','Нет, попробуй другое имя.','Близко или далеко — пока секрет!','Не он!','Нет, продолжаем.','Пока мимо!','Не угадал(а), но игра продолжается.','Попробуй ещё!','Нет, это другой герой.','Не совпало.','Не тот ответ.','Хорошая попытка, но нет.','Увы, не угадал(а).','Продолжай искать!'],
+ topic:['Давай поговорим о любимых книгах!','А что тебе нравится делать в свободное время?','Предлагаю обсудить путешествия.','Можем поговорить о животных!','Хочешь обсудить фильмы или мультфильмы?','Расскажи об интересном событии дня.','Давай поговорим о музыке.','Как насчёт необычных фактов о природе?','Предлагаю обсудить хобби.','Хочешь придумать историю вместе?','Давай обсудим игры.','Какое место ты мечтаешь посетить?','Можем поговорить о космосе.','Давай вспомним что-нибудь хорошее за день.','Хочешь поговорить о технологиях?'],
+ thanks:['Пожалуйста! 😊','Рад помочь!','Обращайся! 💚','Всегда пожалуйста!','Не за что!','С удовольствием!','Здорово, что пригодилось!','Пожалуйста, продолжим!','Рад, что помог.','Конечно! 😄','Было приятно помочь.','Пожалуйста! Что дальше?','На здоровье!','Всегда рад подсказать.','Отлично, идём дальше!'],
+ hello:['Привет! 👋','Привет-привет!','Рад тебя видеть в чате!','Привет! Как дела?','Здравствуй!','Привет! Чем займёмся?','Привет! Есть новости?','Привет! 💚','Здорово!','Привет! Что обсудим?','Рад общению!','Привет! Как настроение?','Привет! Хочешь поиграть?','Добро пожаловать!','Привет! Как проходит день?']
+};
+const variantLast={};
+function varied(kind){const arr=replyVariants[kind];if(!arr)return '';const old=variantLast[kind]??-1;let i=Math.floor(Math.random()*arr.length);if(i===old)i=(i+1)%arr.length;variantLast[kind]=i;return arr[i]}
+const quizSets={
+ 'Общие знания':[{q:'Какая планета ближе всего к Солнцу?',a:['Меркурий','Венера','Земля'],correct:0},{q:'Сколько минут в одном часе?',a:['50','60','100'],correct:1},{q:'Какой океан самый большой?',a:['Атлантический','Индийский','Тихий'],correct:2},{q:'Что изучает ботаника?',a:['Растения','Звёзды','Камни'],correct:0},{q:'Сколько сторон у шестиугольника?',a:['5','6','8'],correct:1}],
+ 'Математика':[{q:'Сколько будет 9 × 7?',a:['63','56','72'],correct:0},{q:'Сколько будет 144 ÷ 12?',a:['11','12','14'],correct:1},{q:'Чему равна половина от 50?',a:['20','30','25'],correct:2},{q:'Сколько будет 18 + 27?',a:['45','35','46'],correct:0},{q:'Сколько будет 6²?',a:['12','36','18'],correct:1}],
+ 'Природа':[{q:'Какое животное относится к млекопитающим?',a:['Дельфин','Акула','Осьминог'],correct:0},{q:'Что поглощают растения при фотосинтезе?',a:['Кислород','Углекислый газ','Азот'],correct:1},{q:'Сколько ног у паука?',a:['6','10','8'],correct:2},{q:'Какая часть растения обычно поглощает воду из почвы?',a:['Корень','Цветок','Плод'],correct:0},{q:'Как называется переход воды в пар?',a:['Замерзание','Испарение','Конденсация'],correct:1}]};
+let quizState=null;
+function showQuizChoices(){
+ const card=document.createElement('div');card.className='quiz-card';chat.append(card);
+ const topicsTitle=document.createElement('b');topicsTitle.textContent='🧩 Выбери тему теста';card.append(topicsTitle);
+ Object.keys(quizSets).forEach(topic=>{const b=document.createElement('button');b.textContent=topic;b.onclick=()=>{card.remove();quizState={profile:activeProfileId,topic,step:0,score:0};showQuizQuestion()};card.append(b)});
+}
+function showQuizQuestion(){
+ if(!quizState||quizState.profile!==activeProfileId)return;
+ const state=quizState,questions=quizSets[state.topic];
+ if(state.step>=questions.length){const result='🏆 Тест «'+state.topic+'» завершён! Результат: '+state.score+' из '+questions.length+'.';quizState=null;animatedAnswer(result);return}
+ const item=questions[state.step],card=document.createElement('div');card.className='quiz-card';chat.append(card);
+ const header=document.createElement('small');header.textContent='🧩 '+state.topic+' · Вопрос '+(state.step+1)+' из '+questions.length;
+ const title=document.createElement('b');title.textContent=item.q;card.append(header,title);
+ item.a.forEach((answer,i)=>{const b=document.createElement('button');b.textContent=answer;b.onclick=()=>{if(!quizState||quizState!==state)return;card.querySelectorAll('button').forEach(x=>x.disabled=true);b.classList.add(i===item.correct?'correct':'wrong');if(i===item.correct)state.score++;const note=document.createElement('small');note.textContent=i===item.correct?'✓ Верно!':'Правильный ответ: '+item.a[item.correct];card.append(note);state.step++;const next=document.createElement('button');next.textContent=state.step===questions.length?'Показать результат':'Следующий вопрос →';next.onclick=()=>{card.remove();showQuizQuestion()};card.append(next)};card.append(b)});
+}
+function topicReply(raw){const s=normalize(raw);if(/(?:предложи|подскажи|выбери|придумай).*?(?:тему|о чем поговорить|о чём поговорить)|^(?:давай пообщаемся|давай поболтаем|о чем поговорим|о чём поговорим)$/.test(s))return varied('topic')+' Или напиши «Другая тема». 😊';if(/^(?:другая тема|еще тему|ещё тему)$/.test(s))return varied('topic');return null}
+// Family AI 3.0: 100 x 100 = 10 000 точных арифметических пар.
+// Они вычисляются по запросу, а не занимают место в памяти браузера.
+const QA_COUNT=10000;
+const smartSynonyms={
+ 'привет':['приветик','приветствую','здрасьте','здарова','хелло','hello','hi','хай','доброго дня'],
+ 'спасибо':['спасибки','благодарю','спс','сенкс','thanks'],
+ 'помоги':['подскажи','выручи','помощь нужна','нужна помощь','поможешь','объясни мне'],
+ 'пока':['покеда','до встречи','увидимся','до скорого'],
+ 'как дела':['как поживаешь','как жизнь','как настроение','как ты'],
+ 'мне скучно':['нечем заняться','скукота','мне нечего делать'],
+ 'предложи тему':['давай поболтаем','о чем поговорим','о чём поговорим','давай пообщаемся']
+};
+function smartCanonical(raw){
+ const s=normalize(raw).replace(/[«»"']/g,'').replace(/\s+/g,' ');
+ for(const [canonical,variants] of Object.entries(smartSynonyms))if(s===canonical||variants.some(v=>normalize(v)===s))return canonical;
+ return s;
+}
+function smartArithmetic(raw){
+ const s=normalize(raw);
+ // 10 000 различных примеров a+b, где a и b от 0 до 99.
+ const m=s.match(/^(?:(?:сколько будет|чему равно|посчитай|вычисли|реши пример|ответь на пример)\s+)?(\d{1,2})\s*(?:\+|плюс|сложить с)\s*(\d{1,2})\s*\??$/);
+ if(!m)return null;
+ const a=Number(m[1]),b=Number(m[2]);
+ return `🧮 ${a} + ${b} = ${a+b}`;
+}
+function smartWidgetType(raw){
+ const s=normalize(raw);
+ if(/(?:виджет|калькулятор|интерактивн|посчитай урожай|рассчитай урожай|таймер|конвертер)/.test(s)){
+  if(/таймер/.test(s))return 'timer';
+  if(/конвертер/.test(s))return 'converter';
+  if(/урожай|огород|грядк|картофел/.test(s))return 'harvest';
+  if(/дела|план|задач/.test(s))return 'tasks';
+  if(/виджет|калькулятор|сч[её]т|вычисл/.test(s))return 'calculator';
+ }
+ return null;
+}
+function createSmartWidget(kind){
+ const card=document.createElement('section');card.className='smart-widget';
+ const title=document.createElement('h3');title.textContent=({harvest:'🌱 Калькулятор урожая',tasks:'📝 Мои дела',timer:'⏱️ Таймер',converter:'📏 Конвертер',calculator:'🧮 Интерактивный калькулятор'}[kind]||'🧩 Виджет');card.append(title);
+ const result=document.createElement('div');result.className='widget-result';result.setAttribute('aria-live','polite');
+ function field(label,placeholder){const wrap=document.createElement('div');const l=document.createElement('label');l.textContent=label;const i=document.createElement('input');i.placeholder=placeholder;i.setAttribute('aria-label',label);wrap.append(l,i);return {wrap,input:i}}
+ if(kind==='timer'){
+  const a=field('Минуты (1–180)','Например, 5');a.input.type='number';a.input.min='1';a.input.max='180';card.append(a.wrap);
+  const btn=document.createElement('button');btn.textContent='Запустить';let interval=null;
+  btn.onclick=()=>{if(interval){clearInterval(interval);interval=null;btn.textContent='Запустить';result.textContent='Таймер остановлен.';return}
+   const mins=Number(a.input.value);if(!Number.isInteger(mins)||mins<1||mins>180){result.textContent='Укажи от 1 до 180 минут.';return}
+   const end=Date.now()+mins*60000;btn.textContent='Остановить';const tick=()=>{if(!card.isConnected){clearInterval(interval);interval=null;return}const left=Math.max(0,Math.ceil((end-Date.now())/1000));result.textContent='Осталось '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(!left){clearInterval(interval);interval=null;btn.textContent='Запустить';result.textContent='⏰ Время вышло! (Таймер работает только при открытой странице.)'}};tick();interval=setInterval(tick,1000)};card.append(btn,result);
+ }else if(kind==='converter'){
+  const a=field('Значение','Например, 2.5');const select=document.createElement('select');select.setAttribute('aria-label','Единицы измерения');
+  for(const [v,t] of [['km-mi','Километры → мили'],['mi-km','Мили → километры'],['kg-lb','Килограммы → фунты'],['lb-kg','Фунты → килограммы'],['c-f','°C → °F'],['f-c','°F → °C']]){const o=document.createElement('option');o.value=v;o.textContent=t;select.append(o)}card.append(a.wrap,select);
+  const btn=document.createElement('button');btn.textContent='Перевести';btn.onclick=()=>{const x=Number(a.input.value.replace(',','.'));if(!a.input.value.trim()||!Number.isFinite(x)){result.textContent='Введи число.';return}const vals={'km-mi':[x*0.621371,'миль'],'mi-km':[x/0.621371,'км'],'kg-lb':[x*2.20462,'фунтов'],'lb-kg':[x/2.20462,'кг'],'c-f':[x*9/5+32,'°F'],'f-c':[(x-32)*5/9,'°C']};const [n,u]=vals[select.value];result.textContent=n.toLocaleString('ru-RU',{maximumFractionDigits:3})+' '+u};card.append(btn,result);
+ }else if(kind==='harvest'){
+  const a=field('Площадь участка (м²)','Например, 100'),b=field('Урожайность (кг/м²)','Например, 3');
+  const row=document.createElement('div');row.className='widget-row';row.append(a.wrap,b.wrap);card.append(row);
+  const btn=document.createElement('button');btn.textContent='Рассчитать урожай';btn.onclick=()=>{const x=Number(a.input.value.replace(',','.')),y=Number(b.input.value.replace(',','.'));result.textContent=!a.input.value||!b.input.value||!Number.isFinite(x)||!Number.isFinite(y)||x<0||y<0||x>1e8||y>1e6?'Проверь значения: нужны два неотрицательных числа.':'Ожидаемый урожай: '+(x*y).toLocaleString('ru-RU',{maximumFractionDigits:2})+' кг. Это приблизительная оценка.'};card.append(btn,result);
+ }else if(kind==='tasks'){
+  const a=field('Новое дело','Что нужно сделать?');card.append(a.wrap);const btn=document.createElement('button');btn.textContent='Добавить дело';btn.onclick=()=>{const value=a.input.value.trim().slice(0,180);if(!value){result.textContent='Напиши название дела.';return}myTasks().push({id:Date.now()+'-'+Math.random(),text:value,done:false});saveTasks();result.textContent='✓ Добавлено: '+value;a.input.value=''};card.append(btn,result);
+ }else{
+  const a=field('Математическое выражение','Например, (12+8)/4');card.append(a.wrap);const btn=document.createElement('button');btn.textContent='Вычислить';btn.onclick=()=>{try{result.textContent=calculate(a.input.value)||'Введи пример с числами и знаками действий.'}catch(e){result.textContent='Ошибка: '+e.message}};card.append(btn,result);
+ }
+ chat.append(card);chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});
+}
+// Повседневный диалог о еде: понимаем намерение и следующий ответ, даже если блюдо незнакомо.
+const foodStates={};
+const foodStarts=/\b(?:буду|собираюсь|пойду|иду|хочу|решил|решила|скоро|сейчас|уже|начинаю|пора|пошел|пошла|пошёл|пошла|сяду|садимся|сели|сел|села|кушаю|ем|поем|поесть|покушать|перекусить|перекусываю|завтракаю|обедаю|ужинаю|завтракать|обедать|ужинать)\b/;
+const foodMeal=/\b(?:завтрак(?:ать|аю|ом)?|обед(?:ать|аю|ом)?|ужин(?:ать|аю|ом)?|перекус(?:ить|ываю)?|кушать|поесть|покушать|ем|поем|поесть|кушаю|покушаю|перекушу)\b/;
+const foodDish=/\b(?:суп\w*|борщ\w*|щи|солянк\w*|уха|лапш\w*|пельмен\w*|вареник\w*|пицц\w*|паст\w*|макарон\w*|спагетти|рис\w*|гречк\w*|каша|кашу|каши|картош\w*|пюре|котлет\w*|куриц\w*|курочк\w*|мяс\w*|рыб\w*|салат\w*|омлет\w*|яичниц\w*|яйц\w*|бутерброд\w*|сэндвич\w*|бургер\w*|шаурм\w*|суши|ролл\w*|плов\w*|блин\w*|сырник\w*|сыр\w*|йогурт\w*|творог\w*|хлеб\w*|булочк\w*|пирог\w*|торт\w*|печень\w*|фрукт\w*|яблок\w*|банан\w*|овощ\w*|рагу|хачапури|хинкали|лазанья|стейк\w*|шашлык\w*|сосиск\w*|колбас\w*|окрошк\w*|рамен|фо|том ям|фалафель|хумус|наггетс\w*|запеканк\w*|смузи|морожен\w*)\b/;
+function foodReply(raw){
+ const s=normalize(raw).replace(/ё/g,'е');
+ const id=activeChatId||'default';const state=foodStates[id];
+ // Не путаем рассказ о еде с вопросом о рецепте, поиском или отрицанием.
+ if(/^(?:как|почему|что|сколько|где|когда|можно ли|подскажи|расскажи|рецепт|приготовь|найди)\b/.test(s))return null;
+ if(/\b(?:не буду|не хочу|не ем|не собираюсь|не стану|не завтракал|не обедал|не ужинал)\b/.test(s)){delete foodStates[id];return null}
+ const meal=foodMeal.test(s);
+ const directMeal=meal&&(foodStarts.test(s)||/^(?:на|у меня|у нас|мой|мое|моё)\s+(?:завтрак|обед|ужин)\b/.test(s)||/^(?:завтрак|обед|ужин|перекус)$/.test(s));
+ const dishMatch=s.match(/(?:^|\b)(?:буду (?:есть|кушать)|ем|кушаю|поем|покушаю|съем|съедим|на (?:завтрак|обед|ужин)|у меня (?:на (?:завтрак|обед|ужин))?|это будет)\s+(.+)$/);
+ let dish=dishMatch?.[1]?.replace(/[.!?]+$/,'').trim();
+ if(dish&&/^(?:сейчас|скоро|потом|дома|в школе|в столовой)$/.test(dish))dish=null;
+ if(directMeal){
+  if(dish&&dish.length>1&&dish.length<110&&foodDish.test(dish)){delete foodStates[id];return choose(['Ого, '+dish+'! 😋 Приятного аппетита!','Звучит вкусно! 🤩 Приятного аппетита!','Отличный выбор! 😋 Приятного аппетита!','Ух ты, '+dish+'! Желаю приятного аппетита! 🍽️']);}
+  foodStates[id]={awaiting:true,turn:0};
+  return choose(['Приятного аппетита! 😋 А что будешь кушать?','Приятного аппетита! 🍽️ Что сегодня на столе?','О, время подкрепиться! 😄 Что будешь есть?','Приятного аппетита! 💚 Что у тебя на завтрак, обед или ужин?']);
+ }
+ if(state?.awaiting){
+  if(/^(?:не знаю|пока не знаю|еще не решил|еще не решила|секрет|не скажу)$/.test(s)){delete foodStates[id];return 'Понятно! 😊 В любом случае приятного аппетита!';}
+  if(/^(?:нет|отмена|неважно|ладно|пока|спасибо)$/.test(s)){delete foodStates[id];return null;}
+  // После вопроса о блюде принимаем практически любое название, включая неизвестную кухню.
+  if(s.length>=2&&s.length<=110&&!/[?]/.test(raw)&&! /^(?:привет|как дела|помоги|погода|давай|расскажи|посчитай|сколько|почему|что такое|я устал|мне грустно)\b/.test(s)){
+   delete foodStates[id];return choose(['Ого, '+raw.trim().replace(/[.!]+$/,'')+'! 😋 Приятного аппетита!','Ух ты, звучит аппетитно! 🤩 Приятного аппетита!','Вот это вкуснота! 😄 Приятного аппетита!','Замечательно! 🍽️ Приятного аппетита!','Ммм, отличный выбор! 😋 Приятного аппетита!']);
+  }
+  delete foodStates[id];
+ }
+ if(foodDish.test(s)&&/^(?:у меня|я ем|я кушаю|сейчас ем|сейчас кушаю|буду есть|буду кушать|съем|поем|покушаю)\b/.test(s))return choose(['Ого, звучит вкусно! 😋 Приятного аппетита!','Ух ты! 🤩 Приятного аппетита!','Ммм! 🍽️ Приятного аппетита!']);
+ return null;
+}
+// Family AI 3.2: автономная смысловая память и контекст (без передачи данных на сервер).
+const INTEL_KEY='family-ai-v3-2-intelligence';
+let intelligenceData=load(INTEL_KEY,{});
+if(!intelligenceData||typeof intelligenceData!=='object'||Array.isArray(intelligenceData))intelligenceData={};
+function intelProfile(){return intelligenceData[activeProfileId]||(intelligenceData[activeProfileId]={facts:[],context:{}})}
+function saveIntel(){try{localStorage.setItem(INTEL_KEY,JSON.stringify(intelligenceData))}catch(e){console.warn('Память не сохранилась',e)}}
+function intelContext(){const p=intelProfile();return p.context[activeChatId]||(p.context[activeChatId]={topic:'',lastQuestion:'',lastReply:''})}
+function intelNormalize(text){return normalize(text).replace(/[«»"'():;]+/g,' ').replace(/\s+/g,' ').trim()}
+const INTEL_TYPOS={'превет':'привет','привте':'привет','привт':'привет','спосибо':'спасибо','спасиба':'спасибо','пожалуста':'пожалуйста','незнаю':'не знаю','щас':'сейчас','скока':'сколько','сикока':'сколько','пачему':'почему','помаги':'помоги','обесни':'объясни','расскажы':'расскажи','рецептт':'рецепт','преготовить':'приготовить','завтрок':'завтрак','ужын':'ужин','абед':'обед','харашо':'хорошо','пагода':'погода','прив':'привет'};
+function intelFix(text){return String(text).replace(/[а-яё]+/gi,w=>{const replacement=INTEL_TYPOS[w.toLowerCase().replace(/ё/g,'е')];return replacement?(w[0]===w[0].toUpperCase()?replacement[0].toUpperCase()+replacement.slice(1):replacement):w})}
+function intelRemember(raw){
+ const s=intelNormalize(raw),p=intelProfile();let m;
+ const patterns=[
+  {re:/^(?:меня зовут|мое имя|моё имя)\s+([а-яa-z-]{2,35})$/i,label:'Имя'},
+  {re:/^(?:у меня есть|у нас есть)\s+(.{3,90})$/i,label:'В семье / дома'},
+  {re:/^(?:мой любимый|моя любимая|мое любимое|моё любимое)\s+(.{3,90})$/i,label:'Предпочтение'},
+  {re:/^(?:я люблю|мне нравится|я увлекаюсь)\s+(.{3,90})$/i,label:'Интерес'}
+ ];
+ for(const item of patterns){m=s.match(item.re);if(!m)continue;const value=m[1].replace(/[.!?]+$/,'').trim();if(/\b(?:пароль|код доступа|адрес|телефон|болезнь|диагноз)\b/i.test(value))return null;
+  const fact={label:item.label,value};if(!p.facts.some(f=>f.label===fact.label&&f.value===fact.value)){p.facts.push(fact);p.facts=p.facts.slice(-24);saveIntel()}return '💚 Запомню: '+value+'. Если захочешь, можешь спросить «Что ты помнишь обо мне?»';}
+ return null;
+}
+function intelMemoryReply(raw){const s=intelNormalize(raw);if(!/^(?:что ты (?:обо мне )?помнишь|что ты помнишь обо мне|мои факты|что ты знаешь обо мне|забудь мои факты|очисти память о себе)$/.test(s))return null;
+ const p=intelProfile();if(/забудь|очисти/.test(s)){p.facts=[];saveIntel();return '🧠 Я очистил сохранённые факты этого профиля. История чатов осталась без изменений.'}
+ return memorySummary()+'\nСохранённые факты:\n'+(p.facts.length?p.facts.map(f=>'• '+f.label+': '+f.value).join('\n'):'Пока нет. Можешь рассказать о своих интересах или питомце.');}
+function intelExplain(raw){const s=intelNormalize(raw);let m=s.match(/^(?:объясни простыми словами|объясни попроще|объясни как ребенку|объясни как ребёнку|простыми словами)\s+(.+)$/);
+ if(!m)return null;const topic=m[1].replace(/^(?:что такое|кто такой|про)\s+/,'').trim();const known=[
+  [/дроб/, 'Дробь — это часть целого. Например, если разделить яблоко на 4 равные части, одна часть — это 1/4.'],
+  [/процент/, 'Процент — это одна сотая часть. Например, 50% — половина, а 25% — четверть.'],
+  [/параллельн/, 'Параллельные прямые идут в одном направлении и не пересекаются.'],
+  [/перпендикулярн/, 'Перпендикулярные прямые пересекаются под прямым углом — 90 градусов.'],
+  [/нейросет|искусственн.*интеллект/, 'Нейросеть — программа, которая учится находить закономерности в примерах и на их основе создавать ответы. Она тоже может ошибаться.'],
+  [/алгоритм/, 'Алгоритм — это последовательность шагов для решения задачи. Как рецепт: сначала одно действие, потом другое.']
+ ];const found=known.find(([re])=>re.test(topic));return found?found[1]+' 😊':'Я могу попробовать объяснить «'+topic+'» проще, но точного объяснения у меня пока нет. Если включён интернет, спроси «Что такое '+topic+'?» — я попробую найти описание.';}
+function intelFollowup(raw){const s=intelNormalize(raw),c=intelContext();
+ if(/^(?:а почему|почему так|а зачем|почему именно)$/.test(s))return c.lastReply?'Давай уточним: ты спрашиваешь, почему '+(c.topic||'это')+'? Я могу объяснить известные мне причины, но не хочу придумывать факты.':'Уточни, о чём именно спрашиваешь, и я постараюсь объяснить. 😊';
+ if(/^(?:а еще|а ещё|расскажи еще|расскажи ещё|подробнее|можно подробнее)$/.test(s))return c.topic?'Продолжим тему «'+c.topic+'». Что именно интересно: примеры, устройство или интересные факты?':'Конечно! 😊 О какой теме рассказать подробнее?';
+ if(/^(?:что это значит|что ты имеешь в виду)$/.test(s))return c.lastReply?'Я имел в виду: «'+c.lastReply.slice(0,170)+'». Какую часть объяснить проще?':'Уточни, какое слово или выражение объяснить.';
+ return null;
+}
+function intelSmalltalk(raw){const s=intelNormalize(raw);
+ if(/^(?:я (?:сейчас )?(?:иду|пойду) гулять|я на прогулке|я гуляю)$/.test(s))return choose(['Хорошей прогулки! 🌿 Куда собираешься?','Здорово! 😊 Приятно провести время на свежем воздухе.']);
+ if(/^(?:я (?:сейчас )?(?:иду|пойду) спать|я ложусь спать|пора спать)$/.test(s))return 'Спокойной ночи! 🌙 Желаю хорошо выспаться.';
+ if(/^(?:я (?:сейчас )?(?:иду|пойду) (?:в школу|на работу)|я в школе|я на работе)$/.test(s))return 'Пусть день пройдёт хорошо! 💚 Что сегодня планируется?';
+ if(/^(?:я вернулся|я вернулась|я дома|я пришел|я пришёл|я пришла)$/.test(s))return 'С возвращением! 😊 Как всё прошло?';
+ if(/^(?:у меня все получилось|у меня всё получилось|я сдал экзамен|я получила пятерку|я получил пятерку)$/.test(s))return 'Здорово, поздравляю! 🎉 Расскажешь, как всё прошло?';
+ if(/^(?:я не понял|я не поняла|не понимаю)$/.test(s))return 'Давай разберём по шагам. Что именно оказалось непонятным?';
+ return null;
+}
+function intelUnknown(raw){const s=intelNormalize(raw);if(/\?$/.test(raw)||/^(?:кто|что|как|почему|где|когда|сколько|зачем|можно ли)\b/.test(s))return 'Пока у меня нет надёжного ответа на этот вопрос. 💚 Попробуй уточнить его или включить интернет-поиск.';
+ return choose(['Расскажешь немного подробнее? 😊 Я хочу правильно понять тебя.','Я пока не уловил тему. Можешь уточнить, о ком или о чём рассказываешь?','Интересно! Продолжай, я читаю. 😊','Давай обсудим! Что в этом для тебя самое важное?']);}
+function intelTrackUser(raw){const c=intelContext(),s=intelNormalize(raw);if(s.length>4&&!/^(?:да|нет|спасибо|привет|пока|а почему|а еще|а ещё)/.test(s)){c.topic=s.slice(0,85);c.lastQuestion=s.slice(0,180)}}
+function intelTrackBot(answer){const c=intelContext();c.lastReply=String(answer).slice(0,500)}
+// Family AI 3.9: тематический диалог — вопрос, осмысленный ответ, продолжение.
+// Не обещаем знания о любой породе/книге: неизвестное уточняем, не выдумываем.
+const DEEP_TOPICS={
+ pet:{name:'питомцах',trigger:/(?:собак[а-я]*|пес|пёс|щен[а-я]*|кошк[а-я]*|кот[а-я]*|котен[а-я]*|котён[а-я]*|питом[а-я]*|шелти|шетландск[а-я]*|хомяк[а-я]*|попугай[а-я]*)/,questions:['Как зовут твоего питомца?','Какая у него порода или вид?','Что он больше всего любит делать?','А сколько ему лет?','Какой у него характер?'],prompts:['Расскажи, как вы обычно проводите время вместе.','У него есть любимая игрушка или занятие?','А чему ты хотел(а) бы его научить?']},
+ food:{name:'еде',trigger:/(?:суп[а-я]*|борщ[а-я]*|пицц[а-я]*|завтрак[а-я]*|обед[а-я]*|ужин[а-я]*|блюд[а-я]*|готов[а-я]*|кухн[а-я]*|пирог[а-я]*|макарон[а-я]*)/,questions:['Что именно собираешься приготовить или поесть?','Ты готовишь сам(а) или вместе с кем-то?','Какие продукты у тебя есть?','Тебе нравится пробовать новые рецепты?'],prompts:['Могу предложить простой рецепт, если скажешь название блюда.','Какие вкусы тебе нравятся больше всего?']},
+ study:{name:'учёбе',trigger:/(?:школ[а-я]*|урок[а-я]*|домашк[а-я]*|учеб[а-я]*|контрольн[а-я]*|экзамен[а-я]*|математик[а-я]*|истори[а-я]*|английск[а-я]*)/,questions:['Какой предмет сейчас обсуждаем?','Что именно по этой теме нужно понять?','Хочешь разобрать пример вместе?','Какой шаг кажется самым трудным?'],prompts:['Могу объяснить по шагам, если пришлёшь условие.','Хочешь попробовать похожий пример?']},
+ hobby:{name:'увлечениях',trigger:/(?:хобби|увлекаюсь|рису[а-я]*|велосипед[а-я]*|игра[а-я]*|музык[а-я]*|спорт[а-я]*|модел[а-я]*|программир[а-я]*)/,questions:['Чем именно ты увлекаешься?','Как давно тебе это интересно?','Что тебе больше всего нравится в этом занятии?','Есть проект или цель, над которой работаешь?'],prompts:['Расскажешь о последнем результате?','Хочешь придумать следующий небольшой шаг?']},
+ travel:{name:'поездках',trigger:/(?:поездк[а-я]*|путешеств[а-я]*|отпуск[а-я]*|мор[ея]|пляж[а-я]*|город[а-я]*|гуля[а-я]*|прогулк[а-я]*)/,questions:['Куда ты собираешься или где уже побывал(а)?','Что тебе там больше всего понравилось?','Ты ездил(а) один(одна) или с семьёй?','Что хотелось бы посмотреть в следующий раз?'],prompts:['Расскажи о самом запомнившемся моменте.','Хочешь составить небольшой план прогулки?']},
+ family:{name:'семье',trigger:/(?:мам[а-я]*|пап[а-я]*|брат[а-я]*|сестр[а-я]*|бабушк[а-я]*|дедушк[а-я]*|семь[яеию]*)/,questions:['О ком из близких ты хочешь рассказать?','Что вы любите делать вместе?','Что сегодня произошло?','Хочешь обсудить, как лучше поступить?'],prompts:['Я слушаю. Что произошло дальше?','Тебе сейчас нужен совет или просто хочется рассказать?']},
+ nature:{name:'растениях и природе',trigger:/(?:растен[а-я]*|цвет[а-я]*|сад[а-я]*|огород[а-я]*|дерев[а-я]*|урожай[а-я]*|природ[а-я]*)/,questions:['Что именно ты выращиваешь или наблюдаешь?','Где оно растёт — дома или на улице?','Как давно ты этим занимаешься?','Что хотелось бы узнать об уходе?'],prompts:['Могу помочь составить простой план ухода.','Что сейчас вызывает больше всего вопросов?']},
+ media:{name:'книгах и фильмах',trigger:/(?:книг[а-я]*|чита[а-я]*|фильм[а-я]*|мультфильм[а-я]*|сериал[а-я]*|геро[а-я]*|персонаж[а-я]*)/,questions:['Как называется произведение?','Кто твой любимый персонаж?','Какой момент запомнился больше всего?','Что тебе понравилось или не понравилось?'],prompts:['Как ты думаешь, почему герой так поступил?','Хочешь обсудить сюжет без спойлеров?']}
+};
+function deepDialogue(raw){
+ const s=intelNormalize(raw),c=intelContext();
+ if(/^(?:стоп|хватит|сменим тему|другая тема|не хочу об этом|закончим тему)$/.test(s)){c.deep=null;return 'Хорошо, сменим тему! 💚 О чём поговорим?';}
+ // Информационные запросы и команды не перебиваем болтовнёй.
+ if(/(?:(?:поищи|найди|поиск|википед|объясни|посчитай|вычисли|рецепт|покажи|напомни|добавь|запомни|погода|сколько будет|что такое|кто такой|кто такая|дроб[а-я]*)\b)/.test(s)||factualQuestion(raw)||/\d+\s*[+*/×÷]/.test(s))return null;
+ if(/^(?:привет|здравствуй|спасибо|пока|добрый день|спокойной ночи|как дела)$/.test(s))return null;
+ let topic=null;
+ for(const [key,item] of Object.entries(DEEP_TOPICS)){if(item.trigger.test(s)){topic=key;break}}
+ // Короткие ответы («Шелти», «7 лет», «Ника») относятся к последнему вопросу.
+ if(!topic&&c.deep&&s.length<110&&s.split(' ').length<=15&&!/[?]$/.test(s))topic=c.deep.topic;
+ if(!topic)return null;
+ const spec=DEEP_TOPICS[topic];
+ if(!c.deep||c.deep.topic!==topic)c.deep={topic,step:0,answers:[],asked:[]};
+ const d=c.deep;
+ if(/^(?:не знаю|незнаю|не помню|без понятия)$/.test(s)){
+  d.step++;return 'Ничего страшного! 😊 '+spec.prompts[d.step%spec.prompts.length];
+ }
+ if(/^(?:да|нет|ага|неа|конечно|не очень)$/.test(s)&&!d.asked.length)return null;
+ if(d.asked.length){const last=d.asked[d.asked.length-1];d.answers.push({question:last,answer:raw.slice(0,140)});d.answers=d.answers.slice(-8)}
+ let acknowledgement='';
+ if(topic==='pet'){
+  if(/шелти|шетландск/.test(s))acknowledgement='Шелти — шетландская овчарка, небольшая пастушья собака. Обычно они сообразительные и любят занятия с человеком. 🐕';
+  else if(/\b\d{1,2}\s*(?:лет|год|года)/.test(s))acknowledgement='Понятно, спасибо, что рассказал(а) о возрасте питомца! 🐾';
+  else if(d.asked.length)acknowledgement='Спасибо, теперь я немного больше знаю о твоём питомце! 🐾';
+  else acknowledgement='Здорово, что у тебя есть питомец! 🐾';
+ }else if(topic==='study')acknowledgement='Давай разберёмся с этим вместе. 📚';
+ else if(topic==='food')acknowledgement='Звучит интересно! 🍽️';
+ else if(topic==='family')acknowledgement='Понимаю, спасибо, что рассказываешь. 💚';
+ else acknowledgement=d.asked.length?'Интересно, спасибо за подробности! 😊':'Давай поговорим об этом подробнее! 😊';
+ // Не повторяем уже заданные вопросы и не уходим в бессмысленное «что думаешь об этом?».
+ const next=spec.questions.find(q=>!d.asked.includes(q));
+ if(next&&d.asked.length<spec.questions.length){d.asked.push(next);d.step++;return acknowledgement+'\n'+next;}
+ d.step++;
+ return acknowledgement+'\n'+spec.prompts[d.step%spec.prompts.length]+' Если хочешь, можем сменить тему.';
+}
+
+// 3.2.2: учебные запросы о дробях обрабатываются до общих ответов про калькулятор.
+function fractionLesson(raw){
+ const q=normalize(raw);
+ if(!/(?:дроб[ьиьяею]|числител|знаменател|смешанн.{0,10}числ)/.test(q))return null;
+ if(/(?:реши|посчитай|вычисли|сколько будет)/.test(q)&&/\d+\s*\/\s*\d+/.test(q))return null;
+ const common='📚 Дробь — это часть целого. В записи 3/4 число 3 — числитель (сколько частей взяли), а 4 — знаменатель (на сколько равных частей разделили целое).\n\n';
+ if(/(?:умнож|произведен)/.test(q))return '✖️ Умножение дробей: умножаем числители и знаменатели.\n2/3 × 3/5 = 6/15 = 2/5.\n\nХочешь разобрать пример вместе?';
+ if(/(?:делен|делить|раздел)/.test(q))return '➗ Деление дробей: вторую дробь переворачиваем и умножаем.\n2/3 ÷ 4/5 = 2/3 × 5/4 = 10/12 = 5/6.\n\nХочешь потренироваться?';
+ if(/(?:слож|склад|вычит|отним|прибав|правил)/.test(q))return common+'➕ При одинаковых знаменателях складываем или вычитаем числители: 1/5 + 2/5 = 3/5.\nПри разных знаменателях сначала приводим к общему: 1/2 + 1/3 = 3/6 + 2/6 = 5/6.\n✖️ При умножении перемножаем числители и знаменатели.\n➗ При делении умножаем на перевёрнутую вторую дробь.\n\nКакое действие разобрать подробнее?';
+ return common+'Например, 1/4 + 2/4 = 3/4. Если знаменатели разные, сначала ищем общий знаменатель.\n\nМожем разобрать сложение, вычитание, умножение или деление. Что интереснее?';
+}
+
+
+// Family AI 3.9 — универсальный тематический контекст, исправления и запросы к поиску.
+const topicMemory={};
+function topicState(){return topicMemory[activeChatId]||(topicMemory[activeChatId]={topic:'',name:'',gender:'',age:'',question:'',lastQuery:''})}
+function topicNormalize(raw){
+ let s=normalize(raw);
+ const corrections=[[/\bсабака\b/g,'собака'],[/\bпарода\b/g,'порода'],[/\bпарод[ыеи]\b/g,'породы'],[/\bминя\b/g,'меня'],[/\bпревет\b/g,'привет'],[/\bдробиы\b/g,'дроби'],[/\bшолти\b/g,'шелти'],[/\bпоищы\b/g,'поищи'],[/\bскока\b/g,'сколько'],[/\bрасскажы\b/g,'расскажи']];
+ for(const [re,v] of corrections)s=s.replace(re,v);
+ return s;
+}
+function topicIntent(raw){
+ const s=topicNormalize(raw),t=topicState();
+ if(/^(?:ей|она|девочка|самка)\*?$/.test(s)&&t.topic==='pets'){t.gender='f';return 'Точно, ей! 🐾 Спасибо, что поправил(а). '+(t.question==='age'?'А сколько ей лет?':'Продолжим разговор о ней?')}
+ if(/^(?:ему|он|мальчик|самец)\*?$/.test(s)&&t.topic==='pets'){t.gender='m';return 'Понял, ему! 🐾 '+(t.question==='age'?'А сколько ему лет?':'Расскажешь о нём ещё?')}
+ if(/^(?:не |я имел[а]? в виду|точнее|исправлю|поправка)/.test(s)&&t.topic){return 'Спасибо за уточнение! 💚 Я учту исправление. Можешь написать правильный вариант целиком?'}
+ if(/^(?:сколько|\d{1,2})(?: лет| год| года)?$/.test(s)&&t.topic==='pets'&&t.question==='age'){
+  const m=s.match(/\d{1,2}/);if(m){t.age=m[0];t.question='activity';return 'Понял, '+t.age+' лет! 🐾 А как '+(t.gender==='f'?'она':t.gender==='m'?'он':'твой питомец')+' обычно проводит день?'}
+ }
+ if(/^(?:а еще|еще|подробнее|продолжай|расскажи больше|что еще)$/.test(s)&&t.topic){return 'Давай углубимся в тему «'+t.topic+'». 💚 '+(t.topic==='дроби'?'Можем разобрать общий знаменатель, сокращение дробей или смешанные числа.':t.topic==='шелти'?'Можем обсудить характер шелти, уход за шерстью или занятия с собакой.':'Могу рассказать об основных понятиях, интересных фактах или практических примерах.')+' Что выбрать?'}
+ if(/^(?:у меня есть |моя собака|мой пес|мой кот|моя кошка)/.test(s)&&/(?:собак|пес|кошк|кот|питом)/.test(s)){
+  t.topic='pets';t.gender=/моя собака|моя кошка/.test(s)?'f':'';t.question='name';return 'Здорово! 🐾 Как зовут твоего питомца?';
+ }
+ if(t.topic==='pets'&&t.question==='name'&&s.length<45&&!/(?:что|как|почему|найди|поищи)/.test(s)){
+  t.name=raw.trim().replace(/[.!?]+$/,'').slice(0,35);t.question='breed';return 'Запомню для этого разговора: '+t.name+'! 🐾 А какой породы твой питомец?';
+ }
+ if(t.topic==='pets'&&t.question==='breed'&&s.length<65&&!/(?:что|как|почему|найди|поищи)/.test(s)){
+  t.topic=s;t.question='age';return 'Понял, порода — '+raw.trim()+'! 🐕 '+(s.includes('шелти')?'Шелти — шетландская овчарка, небольшая пастушья порода. ':'')+'А сколько '+(t.gender==='f'?'ей':t.gender==='m'?'ему':'питомцу')+' лет?';
+ }
+ if(/(?:дроб|числител|знаменател)/.test(s))t.topic='дроби';
+ else if(/(?:шелти|шетландск)/.test(s))t.topic='шелти';
+ return null;
+}
+function researchQuery(raw){
+ const s=topicNormalize(raw),t=topicState();
+ let q=s.replace(/^(?:пожалуйста[, ]*)?(?:поищи|найди|посмотри|проверь|узнай|расскажи|объясни|что такое|кто такой|кто такая|интересно|хочу узнать)\s*/,'').replace(/^(?:в интернете|в поиске|информацию|про|о|об|что за|какая|какой|это)\s*/,'').replace(/\b(?:в интернете|в поиске|в википедии)\b/g,'').replace(/\s+/g,' ').trim();
+ if(/(?:порода|шелти)/.test(s))return 'шелти шетландская овчарка порода собак';
+ if(/(?:дроб|числител|знаменател)/.test(s))return 'обыкновенные дроби правила действия';
+ if(q.length<3&&t.topic&&t.topic!=='pets')q=t.topic;
+ return q.slice(0,120)||s.slice(0,120);
+}
+function researchFollowup(query){
+ const q=topicNormalize(query);
+ if(/шелти|собак|пород/.test(q))return 'Можем подробнее обсудить характер породы, уход или воспитание. Что тебе интереснее?';
+ if(/дроб|математик/.test(q))return 'Хочешь разобрать сложение, вычитание, умножение или деление на примере?';
+ return 'Могу подробнее объяснить отдельный момент, привести пример или поискать связанные сведения. Что разберём?';
+}
+function createStar(label='Думаю над ответом…'){
+ const bubble=document.createElement('div');bubble.className='message bot loading';
+ const wrap=document.createElement('div');wrap.className='ai-wait';
+ const star=document.createElement('span');star.className='ai-star';star.textContent='✦';star.setAttribute('aria-hidden','true');
+ const status=document.createElement('span');status.className='ai-wait-label';status.textContent=label;
+ wrap.append(star,status);bubble.append(wrap);chat.append(bubble);chat.scrollTop=chat.scrollHeight;
+ return {bubble,setLabel(v){status.textContent=v},remove(){bubble.remove()}};
+}
+
+
+// Family AI 4.0: реакция на намерение прежде тематических ключевых слов.
+// Список вариантов не повторяет предыдущую реплику в пределах одной категории.
+const SOCIAL_40={
+ compliment:[
+ 'Спасибо! 💚 Очень приятно, что тебе нравится Family AI!','Спасибо за добрые слова! 😊 Чем займёмся дальше?',
+ 'Как приятно это слышать! 💚','Спасибо! Буду стараться помогать ещё лучше.','Ого, спасибо за такую оценку! ✨',
+ 'Спасибо! Здорово, что приложение тебе пригодилось.','Это очень добрая похвала. Спасибо! 😊',
+ 'Спасибо большое! 💚 Что интересного обсудим?','Благодарю! Мне приятно получать такую обратную связь.',
+ 'Спасибо! Надеюсь, и дальше буду полезным помощником.','Вот это комплимент! 😄 Спасибо!',
+ 'Спасибо за поддержку проекта Family AI! 💚','Очень приятно! Продолжим?',
+ 'Спасибо! Если есть идея для улучшения, рассказывай.','Ура, спасибо! ✨ Чем могу помочь сейчас?',
+ 'Спасибо за тёплые слова! 💚','Благодарю за похвалу! 😊','Спасибо! Это мотивирует улучшать ответы.'
+ ],
+ thanks:[
+ 'Пожалуйста! 💚','Всегда рад помочь! 😊','Не за что!','На здоровье!','Рад, что пригодилось!',
+ 'Пожалуйста, обращайся!','Было приятно помочь.','Конечно! 💚','Отлично, если всё получилось!',
+ 'Пожалуйста! Что-нибудь ещё?','Спасибо и тебе! 😊','Рад быть полезным.',
+ 'Обращайся, если возникнет вопрос.','Всегда пожалуйста!','Здорово, что помогло.',
+ 'Без проблем! 😄','Пожалуйста! Продолжим, когда захочешь.','Удачи! 💚'
+ ],
+ laughter:[
+ 'Ахаха! 😄','🤣 Вот это поворот!','Ха-ха, забавно получилось!','😄 Да, смешно вышло!',
+ 'Ахах, бывает же!','😂 Неожиданно!','Ха-ха! Продолжай!','🤣 Вот это история!',
+ 'Ой, смешно! 😄','Ахаха, понял шутку!','😆 Отлично!', 'Ха-ха, хорошая шутка!',
+ '😂 Улыбнуло!','Ахах, точно!','😄 Смешной момент!','Ха-ха, не ожидал!',
+ '🤣 Да уж!','Ахаха! Что было дальше?'
+ ],
+ greeting:[
+ 'Привет! 👋 Как дела?','Привет-привет! 💚','Здравствуй! Чем займёмся?',
+ 'О, привет! 😊','Привет! Что нового?','Рад общению! 👋','Привет! Нужна помощь?',
+ 'Хей! 💚','Приветствую!','Привет! Что обсудим?', 'Здорово! 😄',
+ 'Добрый день!','Привет! Какие планы?', 'Привет! Я на связи.',
+ 'Здравствуй! Рассказывай.','Привет! Чем помочь?', 'Приветик! 😊','Рад тебя видеть в чате!'
+ ],
+ farewell:[
+ 'Пока! 👋','До встречи! 💚','Хорошего дня!','До скорого! 😊','Увидимся!',
+ 'Удачи!','Пока-пока!','Хорошего вечера!','До следующего разговора!',
+ 'Береги себя!','Всего хорошего!','Было приятно пообщаться.','До связи! 💚',
+ 'Пусть всё получится!','Пока! Хорошего настроения!','Увидимся позже!',
+ 'Всего доброго!','До встречи в Family AI!'
+ ],
+ correction:[
+ 'А, понял! Спасибо, что поправил(а). 🚌 Речь об автобусе, а не о задании. Ты рассказываешь о модели или о своей транспортной карте?',
+ 'Точно, автобус! 🚌 Я перепутал тему. Что именно ты хотел рассказать о нём?',
+ 'Извини, неправильно понял. Ты говоришь об автобусе. Это реальный автобус или часть твоего проекта?',
+ 'Спасибо за уточнение! 🚌 Не буду путать автобус с заданием. Что ты сейчас с ним делаешь?',
+ 'А, теперь ясно! Речь о транспорте. Хочешь обсудить маршрут, модель или рисунок?',
+ 'Ой, моя ошибка! 🚌 Давай вернёмся к автобусу. Что в нём самое интересное?',
+ 'Верно, это автобус, а не школьная работа. Расскажешь, какой именно?',
+ 'Понял, исправляюсь! 🚌 Ты его нарисовал, моделируешь или обсуждаешь?',
+ 'Спасибо, что заметил ошибку! Обсудим именно автобус. Какая это модель?',
+ 'Да, я ошибся с темой. 🚌 Это автобус из твоей карты или из настоящего города?',
+ 'Теперь понял! Давай о самом автобусе. Что хочешь про него узнать?',
+ 'Ага, речь об автобусе! Извини за путаницу. Он относится к какому-то маршруту?',
+ 'Точно, спасибо! 🚌 Продолжим разговор об автобусе, а не о задании.',
+ 'Ой, неправильно распознал сообщение. 🚌 Расскажи про этот автобус подробнее.',
+ 'Принято: автобус. 💚 Хочешь обсудить его внешний вид или движение?',
+ 'Понял поправку! Это автобус. Что ты хотел мне показать?',
+ 'Исправляюсь: мы говорим об автобусе. 🚌 Это твой проект?',
+ 'Спасибо за поправку! Теперь будем обсуждать транспорт, а не уроки.'
+ ],
+ clarify:[
+ 'Понял, я мог неправильно истолковать сообщение. Что именно нужно исправить?',
+ 'Извини за путаницу! Можешь уточнить, что я перепутал?',
+ 'Спасибо, что поправил(а). Попробую понять точнее.',
+ 'Хорошо, исправляюсь. О чём именно шла речь?',
+ 'Похоже, я ошибся. Давай вернёмся к твоей мысли.',
+ 'Принял уточнение. Что ты имел(а) в виду?',
+ 'Ой, неправильно понял! Можешь поправить меня?',
+ 'Спасибо за исправление. Не буду настаивать на неверном ответе.',
+ 'А, теперь понял, что нужна поправка. Что именно изменилось?',
+ 'Моя ошибка. Давай уточним смысл.',
+ 'Извини! Попробую ответить по существу.',
+ 'Понял, это было уточнение, а не новая тема.',
+ 'Хорошо, учту поправку в разговоре.',
+ 'Спасибо, что объяснил(а). Как правильно?',
+ 'Я неверно понял контекст. Давай разберёмся.',
+ 'Верно, нужно исправить предыдущий ответ.',
+ 'Уточнение принято. Продолжим с правильной темой.',
+ 'Извини за недоразумение. Что я упустил?'
+ ]
+};
+const socialLast40={};
+function socialPick40(key){
+ const variants=SOCIAL_40[key];if(!variants)return null;
+ const prev=socialLast40[key]??-1;
+ let index=Math.floor(Math.random()*variants.length);
+ if(index===prev)index=(index+1)%variants.length;
+ socialLast40[key]=index;return variants[index];
+}
+function socialReply40(raw){
+ const t=String(raw).toLowerCase().replace(/ё/g,'е').trim();
+ const s=t.replace(/[!?.,…]+/g,' ').replace(/\s+/g,' ').trim();
+ // Узкие проверки: не перехватываем информационные запросы или рецепты.
+ if(/^(?:это|ето)\s+(?:автобус|автобусик)(?:\s*,?\s*(?:а\s+не\s+задание|не\s+задание))?[!. ]*$/.test(t)||/^(?:какое\s+задание[,!? ]*)?(?:это|ето)\s+автобус[!. ]*$/.test(t))return socialPick40('correction');
+ if(/^(?:ей|ее|её|она|девочка)\s*\*?[!. ]*$/.test(t))return 'А, понял! 🐾 Значит, она девочка. Спасибо за поправку! А сколько ей лет?';
+ if(/^(?:ему|он|мальчик)\s*\*?[!. ]*$/.test(t))return 'А, понял! 🐾 Значит, он мальчик. Спасибо за поправку! А сколько ему лет?';
+ if(/^(?:нет[, ]+)?(?:я\s+имел[а]?\s+в\s+виду\s+другое|ты\s+не\s+понял[а]?|это\s+не\s+то|ты\s+перепутал[а]?|не\s+так|неправильно\s+понял[а]?|я\s+не\s+об\s+этом)(?:[!. ]*)$/.test(t))return socialPick40('clarify');
+ if(/^(?:ты|вы|family ai|фемили аи|фэмили аи|ты\s+просто)\s+(?:(?:очень|такая|такой|самая|самый|прям|просто)\s+)*(?:крутая|крутой|крутые|умная|умный|умница|молодец|классная|классный|лучшая|лучший|супер|топ|офигенная|офигенный|замечательная|замечательный|класс|красавчик|красавица)(?:\s+(?:ии|ai|бот|помощник|помощница|нейросеть))?[!?. 💚❤️😍🔥]*$/.test(t)||/^(?:обожаю\s+(?:этот\s+)?(?:бот|family ai)|ты\s+мне\s+очень\s+помогаешь|мне\s+нравится\s+(?:твой\s+)?(?:ответ|family ai))\s*[!?.]*$/.test(t))return socialPick40('compliment');
+ if(/^(?:спасибо|спасибки|спс|благодарю|большое спасибо|огромное спасибо|сенкс|thanks|thank you|пасиба|спасиба)(?:\s+(?:большое|огромное|тебе|вам|за\s+помощь|очень))?[!?. 💚❤️🙏]*$/.test(t))return socialPick40('thanks');
+ if(/^(?:ах+а+х*|ха(?:ха)+|хехе+|хихи+|лол+|ржу|смешно|ору|😂+|🤣+|😆+|😄+|😹+)(?:[!?. 😂🤣😆😄]*)$/.test(t))return socialPick40('laughter');
+ if(/^(?:привет+|прив+ет|превет|приветик|здравствуй|здравствуйте|здрасьте|здарова|хай|hello|hi|доброе утро|добрый день|добрый вечер)[!?. 👋😊]*$/.test(t))return socialPick40('greeting');
+ if(/^(?:пока|пока пока|покеда|до встречи|до скорого|до связи|спокойной ночи|доброй ночи|увидимся|бай|bye)[!?. 👋💚]*$/.test(t))return socialPick40('farewell');
+ return null;
+}
+
+function respond(raw){
+ const social=socialReply40(raw);if(social!==null)return social;
+ if(/^(?:Расскажи подробнее о своём предыдущем ответе|Объясни предыдущий ответ простыми словами|Приведи пример к предыдущему ответу)$/i.test(raw)){
+  const prev=[...messages].reverse().find(m=>m.role==='bot'&&m.text);
+  if(!prev)return 'Пока нечего объяснять. Задай вопрос!';
+  const kind=raw.startsWith('Расскажи')?'подробное объяснение':raw.startsWith('Объясни')?'объяснение простыми словами':'пример';
+  return 'Чтобы дать '+kind+' без выдуманных фактов, уточни, какую часть предыдущего ответа разобрать. Если включить интернет, можно попросить: «Поищи подробнее про ...». 💚';
+ }
+ const recommendation=mealRecommendationReply(raw);if(recommendation!==null)return recommendation;
+ const recipe=recipeChatReply(raw);if(recipe!==null)return recipe;
+ const contextual=topicIntent(raw);if(contextual!==null)return contextual;
+ const lesson=fractionLesson(raw);if(lesson!==null)return lesson;
+ const deep=deepDialogue(intelFix(raw));if(deep!==null)return deep;
+ const fixed=intelFix(raw);
+ const memory=intelMemoryReply(fixed);if(memory!==null)return memory;
+ const follow=intelFollowup(fixed);if(follow!==null)return follow;
+ const explain=intelExplain(fixed);if(explain!==null)return explain;
+ const remembered=intelRemember(fixed);if(remembered!==null)return remembered;
+ const smalltalk=intelSmalltalk(fixed);if(smalltalk!==null)return smalltalk;
+ raw=fixed;
+const s=smartCanonical(raw);const arithmetic=smartArithmetic(raw);if(arithmetic!==null)return arithmetic;const food=foodReply(raw);if(food!==null)return food;const topic=topicReply(s);if(topic!==null)return topic;const planned=plannerReply(raw);if(planned!==null)return planned;const tutored=tutorReply(raw);if(tutored!==null)return tutored;if(Object.prototype.hasOwnProperty.call(learned,s))return learned[s];const similar=learnedSimilarReply(raw);if(similar!==null)return similar;const everyday=everydayReply(s);if(everyday!==null)return everyday;const friendly=chatReply(s);if(friendly!==null)return friendly;try{const v=calculate(raw);if(v!==null)return v}catch(e){return 'Не получилось посчитать: '+e.message+'. Попробуй пример вроде (12+8)/4.'}for(const item of knowledge){if(item.keys.some(k=>s.includes(k)))return item.answer}return intelUnknown(raw)}
+let typingToken=0;
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function animatedAnswer(text,links){
+ const token=++typingToken;
+ const m={role:'bot',text:String(text),time:Date.now()};
+ const bubble=document.createElement('div');bubble.className='message bot streaming';
+ const who=document.createElement('div');who.className='who';who.textContent='Family AI';
+ const content=document.createElement('span');
+ const cursor=document.createElement('span');cursor.className='stream-cursor';cursor.setAttribute('aria-hidden','true');
+ bubble.append(who,content,cursor);chat.append(bubble);
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ const chars=Array.from(m.text);
+ const step=reduced?chars.length:Math.max(1,Math.ceil(chars.length/170));
+ for(let i=0;i<chars.length;i+=step){
+  if(token!==typingToken){bubble.remove();return}
+  content.textContent+=chars.slice(i,i+step).join('');
+  if(chat.scrollHeight-chat.scrollTop-chat.clientHeight<170)chat.scrollTop=chat.scrollHeight;
+  if(!reduced)await wait(18);
+ }
+ if(token!==typingToken){bubble.remove();return}
+ cursor.remove();bubble.classList.remove('streaming');
+ messages.push(m);messages=messages.slice(-250);persist();
+ if(links)appendLinks(bubble,links);
+ attachQuickActions(bubble,m.text);speakReply(m.text);
+ if(chat.scrollHeight-chat.scrollTop-chat.clientHeight<190)chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});
+}
+function makeWorkStatus(container){
+ const box=document.createElement('div');box.className='work-status';container.replaceChildren(box);
+ const steps=[];
+ return {step(label){if(steps.length){const previous=steps[steps.length-1];previous.mark.textContent='✓';previous.row.classList.remove('current');previous.row.classList.add('done')}
+ const row=document.createElement('div');row.className='work-step current';const mark=document.createElement('span');mark.className='work-mark';mark.textContent='◌';const title=document.createElement('span');title.textContent=label;row.append(mark,title);box.append(row);steps.push({row,mark});},finish(){if(steps.length){const last=steps[steps.length-1];last.mark.textContent='✓';last.row.classList.remove('current');last.row.classList.add('done')}}};
+}
+
+// Family AI 3.9: настройки голоса и поиска сохраняются локально.
+const SPEECH_KEY='family-ai-v35-speech',AUTO_SEARCH_KEY='family-ai-v35-autosearch';
+let speechEnabled=load(SPEECH_KEY,false),autoSearchEnabled=load(AUTO_SEARCH_KEY,false);
+function updateExtraSettings(){
+ $('speechToggle').textContent='🔊 Озвучивание ответов: '+(speechEnabled?'вкл':'выкл');$('speechToggle').setAttribute('aria-pressed',String(speechEnabled));
+ $('autoSearchToggle').textContent='🌐 Автопоиск для вопросов: '+(autoSearchEnabled?'вкл':'выкл');$('autoSearchToggle').setAttribute('aria-pressed',String(autoSearchEnabled));
+}
+$('speechToggle').onclick=()=>{speechEnabled=!speechEnabled;localStorage.setItem(SPEECH_KEY,JSON.stringify(speechEnabled));if(!speechEnabled)window.speechSynthesis?.cancel();updateExtraSettings()};
+$('autoSearchToggle').onclick=()=>{autoSearchEnabled=!autoSearchEnabled;localStorage.setItem(AUTO_SEARCH_KEY,JSON.stringify(autoSearchEnabled));updateExtraSettings()};
+updateExtraSettings();
+function speakReply(text){
+ if(!speechEnabled||!('speechSynthesis' in window))return;
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1800));u.lang='ru-RU';u.rate=1;const ru=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith('ru'));if(ru)u.voice=ru;speechSynthesis.speak(u)}catch(e){console.warn('Озвучивание недоступно',e)}
+}
+function attachQuickActions(bubble,answer){
+ if(!answer||bubble.querySelector('.quick-actions'))return;
+ const actions=document.createElement('div');actions.className='quick-actions';
+ for(const [title,prompt] of [['Подробнее','Расскажи подробнее о своём предыдущем ответе'],['Проще','Объясни предыдущий ответ простыми словами'],['Пример','Приведи пример к предыдущему ответу'],['Копировать',null]]){
+  const b=document.createElement('button');b.type='button';b.textContent=title;
+  b.onclick=()=>{if(prompt){send(prompt);}else{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(answer).catch(()=>fallbackCopy(answer));else fallbackCopy(answer)}};
+  actions.append(b);
+ }
+ bubble.append(actions);
+}
+function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;document.body.append(ta);ta.select();document.execCommand('copy');ta.remove()}
+
+async function send(text){
+ text=String(text).trim();const photo=pendingPhoto;if(!text&&!photo)return;
+ if(photo)resetPhoto();
+ if(photo){
+  typingToken++;cancelPending();
+  if(chat.querySelector('.empty'))chat.replaceChildren();
+  add('user',text||'📷 Фотография',true,photo);
+  if(!navigator.onLine){await animatedAnswer('📷 Фото прикреплено. Для первого распознавания текста потребуется интернет, чтобы загрузить библиотеку. Само фото остаётся в браузере. Пока можешь переписать условие.');return}
+  const pending=document.createElement('div');pending.className='message bot loading';chat.append(pending);const progress=makeWorkStatus(pending);progress.step(ocrWorker?'Распознаватель готов — читаю фото…':'Подготавливаю распознаватель (первый раз дольше)…');
+  const generation=++ocrGeneration;
+  $('stopBtn').classList.add('show');
+  let lastPercent=-1;
+  ocrProgress=(m)=>{
+   if(generation!==ocrGeneration)return;
+   const pct=typeof m.progress==='number'?Math.round(m.progress*100):null;
+   if(pct!==null&&pct!==lastPercent&&pct%5===0){lastPercent=pct;const line=pending.querySelector('.work-step.current span:last-child');if(line)line.textContent=(m.status==='recognizing text'?'Читаю текст':'Подготавливаю данные')+' — '+pct+'%';}
+  };
+  try{
+   const extracted=await recognizePhoto(photo);
+   if(generation!==ocrGeneration)return;
+   progress.step('Обрабатываю распознанный текст…');progress.finish();pending.remove();$('stopBtn').classList.remove('show');
+   if(!extracted){await animatedAnswer('📷 Не удалось разобрать текст. Попробуй сделать фото чётче, без бликов, или напиши условие вручную. Рисунки и схемы я пока не понимаю.');return}
+   const clipped=extracted.slice(0,1600);
+   const math=(()=>{try{return calculate(clipped.trim())}catch{return null}})();
+   await animatedAnswer('📷 Я распознал текст (проверь ошибки):\n«'+clipped+'»\n\n'+(math?'🧮 '+math:'📚 Можем разобрать задание вместе! Напиши, что нужно найти или объяснить. Я не буду угадывать условие по рисунку.'));
+  }catch(err){if(generation===ocrGeneration){pending.remove();await animatedAnswer('Не удалось распознать фото: '+err.message+'. Попробуй открыть файл в обычном браузере с интернетом или перепиши условие.')}}finally{if(generation===ocrGeneration)$('stopBtn').classList.remove('show')}return;
+ }
+
+ if(text.length>1000)text=text.slice(0,1000);
+ typingToken++;if(pendingController){pendingController.abort();pendingController=null;document.querySelector('.loading')?.remove()}
+ const current=++requestId;
+ if(chat.querySelector('.empty'))chat.replaceChildren();
+ add('user',text);
+ const starWait=createStar('Думаю над ответом…');
+ await new Promise(resolve=>requestAnimationFrame(resolve));
+ if(current!==requestId){starWait.remove();return}
+ starWait.remove();
+ intelTrackUser(text);
+ if(cookingGuideRequested(text))recoverCookingRecipe();
+ const widgetKind=smartWidgetType(text);
+ if(widgetKind){await animatedAnswer('Готово! Ниже интерактивный виджет. 👇');createSmartWidget(widgetKind);return}
+ if(isWeatherQuestion(text)){
+  if(!webEnabled){await animatedAnswer('🌐 Для актуальной погоды включи «Интернет» в Family AI.');return}
+  if(!navigator.onLine){await animatedAnswer('Нет подключения к интернету. Не могу проверить актуальную погоду.');return}
+  const weatherStar=createStar('Получаю прогноз Open-Meteo…');const pending=weatherStar.bubble;const progress={finish(){},step(v){weatherStar.setLabel(v)}};
+  const controller=new AbortController();pendingController=controller;$('stopBtn').classList.add('show');const timeout=setTimeout(()=>controller.abort(),15000);
+  try{const result=await weatherAnswer(text,controller.signal);if(current!==requestId)return;progress.finish();pending.remove();await animatedAnswer(result)}
+  catch(e){if(current!==requestId)return;pending.remove();await animatedAnswer(e.name==='AbortError'?'Получение погоды остановлено.':'Не удалось загрузить погоду. Проверь интернет и попробуй открыть HTML в обычном браузере.');}
+  finally{clearTimeout(timeout);if(current===requestId){pendingController=null;$('stopBtn').classList.remove('show')}}return;
+ }
+ const local=respond(text);
+ intelTrackBot(local);
+ const guideNow=!!(cookingGuideRequested(text)&&cookingState().recipe&&cookingState().active);
+ const isUnknown=local.startsWith('Пока у меня нет надёжного ответа') || local.startsWith('Я пока не знаю');
+ const explicitSearch=/(?:поищи|найди|поиск|википедии|проверь в интернете|узнай в интернете|посмотри в интернете)/i.test(text);
+ const wantsSearch=!guideNow&&(explicitSearch||(factualQuestion(text)&&(isUnknown||autoSearchEnabled))); 
+ if(!webEnabled||!wantsSearch){await animatedAnswer(explicitSearch&&!webEnabled?'🌐 Интернет-поиск сейчас выключен. Включи кнопку «Интернет», чтобы я мог проверить сведения.\n\n'+local:local);if(guideNow&&current===requestId)cookingWidget(cookingState().recipe);if(current===requestId&&local.startsWith('🍽️ Вот что можно приготовить'))mealChoicesWidget();return}
+ if(!navigator.onLine){await animatedAnswer('Нет подключения к интернету. '+local);return}
+ const searchStar=createStar('Ищу информацию в Википедии…');const pending=searchStar.bubble;
+ const controller=new AbortController();pendingController=controller;$('stopBtn').classList.add('show');
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const query=researchQuery(text);const result=await internetAnswer(query,controller.signal);
+  if(current!==requestId)return;
+  searchStar.setLabel('Готовлю объяснение…');pending.remove();await animatedAnswer(result.text+'\n\n'+researchFollowup(query),result);
+ }catch(e){
+  if(current!==requestId)return;
+  pending.remove();
+  if(e.name==='AbortError'){await animatedAnswer('Поиск остановлен или превышено время ожидания.');}
+  else {await animatedAnswer('Не удалось получить ответ из Википедии. Возможно, предпросмотр Acode ограничивает сетевые запросы. Можно попробовать открыть HTML в браузере.\n\n'+local,{google:researchQuery(text)})}
+ }finally{clearTimeout(timeout);if(current===requestId){pendingController=null;$('stopBtn').classList.remove('show')}}
+}
+$('toolsBtn').onclick=()=>$('toolsDialog').showModal();
+$('closeTools').onclick=()=>$('toolsDialog').close();
+$('tutorTool').onclick=()=>{$('toolsDialog').close();send('Начни режим репетитор')};
+$('tasksTool').onclick=()=>{$('toolsDialog').close();renderTasks();$('tasksDialog').showModal()};
+$('memoryTool').onclick=()=>{$('toolsDialog').close();send('Что ты обо мне помнишь?')};
+$('ocrTool').onclick=()=>{$('toolsDialog').close();$('photoInput').click()};
+$('quizTool').onclick=()=>{$('toolsDialog').close();showQuizChoices()};
+
+$('weatherTool').onclick=()=>{$('toolsDialog').close();send('Какая погода?')};
+$('widgetTool').onclick=()=>{$('toolsDialog').close();$('widgetMenu').showModal()};
+$('closeWidgetMenu').onclick=()=>$('widgetMenu').close();
+document.querySelectorAll('[data-widget]').forEach(btn=>btn.onclick=()=>{$('widgetMenu').close();send('Создай виджет '+({calculator:'калькулятор',timer:'таймер',converter:'конвертер',harvest:'урожая'}[btn.dataset.widget]||'калькулятор'))});
+$('closeTasks').onclick=()=>$('tasksDialog').close();
+$('addTask').onclick=()=>{const t=$('taskText').value.trim();if(!t)return;myTasks().push({id:Date.now()+'-'+Math.random(),text:t,done:false});$('taskText').value='';saveTasks();renderTasks()};
+$('stopBtn').onclick=async()=>{if(pendingController)pendingController.abort();if(document.querySelector('.loading')&&ocrWorkerPromise){ocrGeneration++;ocrProgress=()=>{};const worker=ocrWorker;ocrWorker=null;ocrWorkerPromise=null;document.querySelector('.loading')?.remove();$('stopBtn').classList.remove('show');if(worker)await worker.terminate().catch(()=>{});await animatedAnswer('Распознавание остановлено. Можно попробовать другое фото.');}};
+$('historyBtn').onclick=()=>{showHistory();$('historyDialog').showModal()};
+$('closeHistory').onclick=()=>$('historyDialog').close();
+$('newChatBtn').onclick=()=>newChat();
+
+$('form').addEventListener('submit',e=>{e.preventDefault();const input=$('input');send(input.value);input.value='';input.focus()});document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>send(b.dataset.prompt));
+$('themeBtn').onclick=()=>{document.body.classList.toggle('light');try{localStorage.setItem(THEME,JSON.stringify(document.body.classList.contains('light')?'light':'dark'))}catch{}};
+$('learnBtn').onclick=()=>$('learnDialog').showModal();$('cancelLearn').onclick=()=>$('learnDialog').close();
+$('saveLearn').onclick=()=>{const q=normalize($('question').value),a=$('answer').value.trim();if(!q||!a){alert('Заполни вопрос и ответ');return}if(q.length>150||a.length>1000){alert('Слишком длинный вопрос или ответ');return}learned[q]=a;try{localStorage.setItem(LEARN,JSON.stringify(learned))}catch{alert('Не удалось сохранить: возможно, память браузера заполнена');return}$('question').value='';$('answer').value='';$('learnDialog').close();add('bot','Готово! Я запомнил новый ответ. 🧠')};
+$('settingsBtn').onclick=()=>$('settingsDialog').showModal();$('closeSettings').onclick=()=>$('settingsDialog').close();
+$('clearBtn').onclick=()=>{if(confirm('Очистить сообщения текущего чата?')){cancelPending();messages=[];persist();renderAll();$('settingsDialog').close()}};
+$('clearLearnBtn').onclick=()=>{if(confirm('Удалить все ответы, которым ты меня научил?')){learned={};try{localStorage.removeItem(LEARN)}catch{}$('settingsDialog').close()}};
+$('exportBtn').onclick=()=>{const content=messages.map(m=>`${m.role==='user'?'Ты':'Family AI'}: ${m.text}`).join('\n\n');const blob=new Blob([content],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='family-ai-chat.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)};
+// Профили и независимые переписки.
+function refreshProfileSelect(){const sel=$('profileSelect');sel.replaceChildren();for(const p of profiles){const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.append(o)}sel.value=activeProfileId;$('profileInterests').value=currentProfile().interests||'';saveProfiles()}
+$('profileBtn').onclick=()=>{refreshProfileSelect();$('profileDialog').showModal()};
+$('closeProfile').onclick=()=>$('profileDialog').close();
+$('profileSelect').onchange=()=>{const p=profiles.find(x=>x.id===$('profileSelect').value);if(p)$('profileInterests').value=p.interests||''};
+$('saveProfile').onclick=()=>{const name=$('profileName').value.trim(),interests=$('profileInterests').value.trim();let p;if(name){p={id:'p-'+Date.now(),name,interests};profiles.push(p);activeProfileId=p.id;}else{p=profiles.find(x=>x.id===$('profileSelect').value);if(!p)return;p.interests=interests;activeProfileId=p.id;}saveProfiles();$('profileName').value='';newChat();refreshProfileSelect();$('profileDialog').close()};
+$('switchProfile').onclick=()=>{activeProfileId=$('profileSelect').value;saveProfiles();newChat();$('profileDialog').close()};
+$('deleteProfile').onclick=()=>{const id=$('profileSelect').value;if(profiles.length===1){alert('Нужен хотя бы один профиль');return}if(!confirm('Удалить профиль и его чаты?'))return;profiles=profiles.filter(p=>p.id!==id);chatSessions=chatSessions.filter(c=>(c.profileId||'default')!==id);if(activeProfileId===id)activeProfileId=profiles[0].id;saveProfiles();saveSessions();newChat();refreshProfileSelect()};
+// Диктовка через Web Speech API, если она поддерживается браузером.
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+let voiceRecognition=null;
+const voiceBtn=$('voiceBtn');
+if(!SpeechRecognition){voiceBtn.title='В этом браузере распознавание речи недоступно';voiceBtn.onclick=()=>alert('Голосовой ввод не поддерживается этим браузером. Попробуй открыть сайт в Chrome через HTTPS.');}
+else{voiceBtn.onclick=()=>{
+ if(voiceRecognition){voiceRecognition.stop();return}
+ const rec=new SpeechRecognition();voiceRecognition=rec;rec.lang='ru-RU';rec.interimResults=true;rec.continuous=false;
+ const base=$('input').value;voiceBtn.classList.add('listening');voiceBtn.textContent='■';
+ rec.onresult=e=>{let words='';for(let i=0;i<e.results.length;i++)words+=e.results[i][0].transcript+' ';$('input').value=(base+' '+words).trim()};
+ rec.onerror=e=>{if(e.error==='not-allowed')alert('Нужно разрешить доступ к микрофону. Для распознавания речи браузеру может понадобиться HTTPS и интернет.')};
+ rec.onend=()=>{voiceRecognition=null;voiceBtn.classList.remove('listening');voiceBtn.textContent='🎙'};
+ try{rec.start()}catch(e){rec.onend();alert('Не удалось запустить микрофон: '+e.message)};
+ }}
+refreshProfileSelect();
+newChat(); // Каждый запуск — новый чат в выбранном профиле.
+
+
+// Family AI 3.9: семейные инструменты, без внешних библиотек.
+const FAMILY_KEY='family-ai-v34-family';
+let familyData=load(FAMILY_KEY,{reminders:[],shopping:[],events:[]});
+if(!familyData||typeof familyData!=='object')familyData={};
+for(const k of ['reminders','shopping','events'])if(!Array.isArray(familyData[k]))familyData[k]=[];
+function familySave(){try{localStorage.setItem(FAMILY_KEY,JSON.stringify(familyData))}catch(e){alert('Не удалось сохранить. Проверь свободное место браузера.')}}
+function familyId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,9)}
+function familyRow(target,label,done,onToggle,onDelete){const row=document.createElement('div');row.className='family-row';if(done)row.style.opacity='.55';if(onToggle){const check=document.createElement('input');check.type='checkbox';check.checked=!!done;check.style.width='auto';check.onchange=onToggle;row.append(check)}const span=document.createElement('span');span.textContent=label;row.append(span);const del=document.createElement('button');del.textContent='✕';del.title='Удалить';del.onclick=onDelete;row.append(del);target.append(row)}
+function familyRender(){
+ const rem=$('reminderList');rem.replaceChildren();const mine=familyData.reminders.filter(x=>x.owner===activeProfileId).sort((a,b)=>a.when.localeCompare(b.when));for(const x of mine)familyRow(rem,x.text+' — '+new Date(x.when).toLocaleString('ru-RU'),x.done,()=>{x.done=!x.done;familySave();familyRender()},()=>{familyData.reminders=familyData.reminders.filter(y=>y.id!==x.id);familySave();familyRender()});if(!mine.length)rem.textContent='Напоминаний пока нет.';
+ const sh=$('shoppingList');sh.replaceChildren();for(const x of familyData.shopping)familyRow(sh,x.text,x.done,()=>{x.done=!x.done;familySave();familyRender()},()=>{familyData.shopping=familyData.shopping.filter(y=>y.id!==x.id);familySave();familyRender()});if(!familyData.shopping.length)sh.textContent='Список пуст.';
+ const ev=$('eventList');ev.replaceChildren();const events=familyData.events.filter(x=>x.shared||x.owner===activeProfileId).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));for(const x of events)familyRow(ev,x.date+(x.time?' '+x.time:'')+' · '+x.text+(x.shared?' · 👨‍👩‍👧‍👦':''),false,null,()=>{familyData.events=familyData.events.filter(y=>y.id!==x.id);familySave();familyRender()});if(!events.length)ev.textContent='Событий пока нет.';
+}
+$('familyTool').onclick=()=>{$('toolsDialog').close();familyRender();$('familyDialog').showModal()};
+$('familyClose').onclick=()=>$('familyDialog').close();
+document.querySelectorAll('[data-ft]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('[data-ft]').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('[data-fp]').forEach(p=>p.classList.toggle('active',p.dataset.fp===btn.dataset.ft))});
+$('reminderAdd').onclick=()=>{const text=$('reminderText').value.trim(),when=$('reminderWhen').value;if(!text||!when){alert('Напиши текст и выбери дату.');return}if(!Number.isFinite(new Date(when).getTime()))return;familyData.reminders.push({id:familyId(),owner:activeProfileId,text,when,done:false,notified:false});$('reminderText').value='';familySave();familyRender()};
+$('shoppingAdd').onclick=()=>{const text=$('shoppingText').value.trim();if(!text)return;familyData.shopping.push({id:familyId(),text,done:false});$('shoppingText').value='';familySave();familyRender()};
+$('eventAdd').onclick=()=>{const text=$('eventText').value.trim(),date=$('eventDate').value,time=$('eventTime').value;if(!text||!date){alert('Введи событие и дату.');return}familyData.events.push({id:familyId(),text,date,time,owner:activeProfileId,shared:$('eventShared').checked});$('eventText').value='';familySave();familyRender()};
+// Family AI 3.9: 1000 самостоятельных вариантов рецептов: 10 групп × 10 основ × 10 добавок.
+// Это вариации блюд, а не 1000 принципиально разных кулинарных традиций.
+const RECIPE_GROUPS=[
+ {kind:'Каша',bases:['овсяная','рисовая','гречневая','пшённая','манная','кукурузная','перловая','ячневая','пшеничная','из булгура'],main:'крупа',extras:['яблоком','грушей','бананом','изюмом','курагой','черникой','клубникой','корицей','тыквой','мёдом'],extraItems:['яблоко','груша','банан','изюм','курага','черника','клубника','корица','тыква','мёд'],steps:'Промой крупу, если это требуется. Отвари в воде или молоке по инструкции на упаковке, помешивая. Добавь подготовленную добавку ближе к концу приготовления или при подаче.'},
+ {kind:'Омлет',bases:['с сыром','с помидорами','со шпинатом','с брокколи','с грибами','с кабачком','с болгарским перцем','с зелёным луком','с картофелем','с цветной капустой'],main:'яйца',extras:['укропом','петрушкой','базиликом','паприкой','орегано','тимьяном','зелёным луком','сыром','помидорами','шпинатом'],extraItems:['укроп','петрушка','базилик','паприка','орегано','тимьян','зелёный лук','сыр','помидоры','шпинат'],steps:'Подготовь овощи: твёрдые заранее доведи до мягкости. Взбей яйца с небольшим количеством молока, смешай с основой. Готовь под крышкой на умеренном огне до полной готовности яиц. Добавь указанную приправу или зелень.'},
+ {kind:'Суп',bases:['картофельный','морковный','тыквенный','из чечевицы','гороховый','рисовый','гречневый','овощной','с вермишелью','с цветной капустой'],main:'овощной бульон',extras:['укропом','петрушкой','зелёным луком','чесноком','паприкой','тимьяном','базиликом','сельдереем','морковью','кабачком'],extraItems:['укроп','петрушка','зелёный лук','чеснок','паприка','тимьян','базилик','сельдерей','морковь','кабачок'],steps:'Подготовь и нарежь основные ингредиенты. Доведи бульон до кипения и вари продукты до мягкости: бобовые предварительно подготовь по инструкции. Добавь выбранную зелень или приправу, попробуй и подавай горячим.'},
+ {kind:'Салат',bases:['из огурцов и помидоров','из капусты и моркови','из свёклы','из моркови и яблока','из помидоров','из огурцов','из листового салата','из редиса','из брокколи','из фасоли'],main:'овощи',extras:['укропом','петрушкой','базиликом','лимонным соком','оливковым маслом','йогуртовой заправкой','зелёным луком','кунжутом','тыквенными семечками','сладким перцем'],extraItems:['укроп','петрушка','базилик','лимон','оливковое масло','йогурт','зелёный лук','кунжут','тыквенные семечки','сладкий перец'],steps:'Тщательно вымой овощи. Продукты, требующие варки, заранее отвари и остуди. Нарежь, добавь выбранную добавку и перемешай. Подавай свежим.'},
+ {kind:'Паста',bases:['с томатным соусом','со сливочным соусом','с грибами','с брокколи','со шпинатом','с кабачком','с баклажаном','с морковью','с тыквой','с цветной капустой'],main:'макароны',extras:['базиликом','петрушкой','орегано','чесноком','пармезаном','паприкой','тимьяном','оливковым маслом','зелёным луком','помидорами'],extraItems:['базилик','петрушка','орегано','чеснок','сыр','паприка','тимьян','оливковое масло','зелёный лук','помидоры'],steps:'Отвари макароны по инструкции. Подготовь овощи или соус отдельно и доведи до готовности. Соедини пасту с соусом, прогрей и добавь выбранную зелень или приправу.'},
+ {kind:'Рис',bases:['с овощами','с морковью','с грибами','с горошком','с кукурузой','с брокколи','с тыквой','со шпинатом','с фасолью','с кабачком'],main:'рис',extras:['укропом','петрушкой','базиликом','куркумой','паприкой','чесноком','лимонным соком','тимьяном','зелёным луком','кунжутом'],extraItems:['укроп','петрушка','базилик','куркума','паприка','чеснок','лимон','тимьян','зелёный лук','кунжут'],steps:'Промой рис и отвари до готовности по инструкции. Овощи отдельно потуши до мягкости, а фасоль используй готовую. Соедини с рисом, добавь приправу и прогрей.'},
+ {kind:'Запечённый картофель',bases:['с грибами','с морковью','с брокколи','с кабачком','с помидорами','с луком','с цветной капустой','со сладким перцем','с тыквой','с баклажаном'],main:'картофель',extras:['укропом','петрушкой','розмарином','тимьяном','чесноком','паприкой','орегано','сыром','базиликом','зелёным луком'],extraItems:['укроп','петрушка','розмарин','тимьян','чеснок','паприка','орегано','сыр','базилик','зелёный лук'],steps:'Вымой и нарежь картофель и овощи примерно одинаковыми кусочками. Смешай с небольшим количеством масла. Запекай при 190 °C примерно 30–45 минут до мягкости, перемешав в середине. Добавь зелень при подаче; сыр — ближе к концу.'},
+ {kind:'Творожный десерт',bases:['с бананом','с яблоком','с грушей','с клубникой','с черникой','с малиной','с персиком','с абрикосом','с манго','с киви'],main:'творог',extras:['корицей','мёдом','йогуртом','овсяными хлопьями','изюмом','курагой','кокосовой стружкой','ванилью','кунжутом','орехами'],extraItems:['корица','мёд','йогурт','овсяные хлопья','изюм','курага','кокосовая стружка','ваниль','кунжут','орехи'],steps:'Вымой фрукты, очисти при необходимости и нарежь. Разомни творог или смешай с йогуртом для мягкой текстуры. Добавь фрукты и выбранную добавку, перемешай. Не требует нагревания.'},
+ {kind:'Смузи',bases:['банановый','клубничный','черничный','малиновый','яблочный','грушевый','персиковый','манговый','из киви','из ананаса'],main:'фрукты',extras:['йогуртом','молоком','кефиром','овсяными хлопьями','бананом','клубникой','черникой','манго','кокосовой стружкой','корицей'],extraItems:['йогурт','молоко','кефир','овсяные хлопья','банан','клубника','черника','манго','кокосовая стружка','корица'],steps:'Вымой фрукты, очисти и удали несъедобные части. Положи их в блендер, добавь выбранную добавку и немного воды, молока или йогурта. Взбей до однородности и подавай сразу.'},
+ {kind:'Гречка',bases:['с грибами','с морковью','с луком','с брокколи','с кабачком','с помидорами','с тыквой','с фасолью','со шпинатом','со сладким перцем'],main:'гречка',extras:['укропом','петрушкой','базиликом','чесноком','тимьяном','паприкой','зелёным луком','орегано','морковью','горошком'],extraItems:['укроп','петрушка','базилик','чеснок','тимьян','паприка','зелёный лук','орегано','морковь','горошек'],steps:'Промой гречку и отвари до готовности. Овощи отдельно потуши до мягкости, фасоль используй готовую. Соедини, добавь выбранную приправу и прогрей перед подачей.'}
+];
+const familyRecipes=[];
+for(const group of RECIPE_GROUPS){for(const base of group.bases){for(let j=0;j<group.extras.length;j++){
+ const title=group.kind+' '+base+' с '+group.extras[j];
+ const baseIngredients=base.replace(/^(?:с |со |из |в |на )/,'').split(/\s+и\s+|\s+с\s+/).filter(Boolean);
+ const ingredients=[group.main,...baseIngredients,group.extraItems[j]];
+ familyRecipes.push({name:title,ingredients,steps:'1. '+group.steps.replace(/\. /g,'.\n2. ').replace(/\n2\. /g,'\n2. '),category:group.kind});
+}}}
+
+// Family AI 3.9: рекомендации завтрака, обеда и ужина + выбор в чате.
+const MEAL_RECIPES=[
+ {name:'Овсяная каша с бананом',meal:'breakfast',mins:12,vegetarian:true,ingredients:['овсяные хлопья — 50 г','молоко или вода — 200 мл','банан — 1 шт.'],steps:['Налей молоко или воду в кастрюлю и нагрей.','Добавь хлопья и вари на слабом огне 5–8 минут, помешивая; ориентируйся на упаковку.','Нарежь банан, добавь к каше и подавай.']},
+ {name:'Омлет с сыром',meal:'breakfast',mins:12,vegetarian:true,ingredients:['яйца — 2 шт.','молоко — 2 ст. л.','сыр — 30 г','немного масла'],steps:['Разбей яйца в миску, добавь молоко и перемешай.','Натри сыр и добавь к яичной смеси.','На слабом огне готовь под крышкой до полного схватывания яйца, примерно 5–8 минут.']},
+ {name:'Творог с ягодами',meal:'breakfast',mins:5,vegetarian:true,ingredients:['творог — 150 г','ягоды — 70 г','йогурт — 2 ст. л.'],steps:['Вымой ягоды.','Смешай творог с йогуртом.','Добавь ягоды и подавай.']},
+ {name:'Бутерброд с сыром и помидором',meal:'breakfast',mins:7,vegetarian:true,ingredients:['хлеб — 2 ломтика','сыр — 40 г','помидор — 1 шт.'],steps:['Вымой и нарежь помидор.','Положи на хлеб сыр и ломтики помидора.','Подавай сразу или слегка подогрей до расплавления сыра.']},
+ {name:'Йогурт с овсяными хлопьями',meal:'breakfast',mins:5,vegetarian:true,ingredients:['натуральный йогурт — 180 г','овсяные хлопья быстрого приготовления — 30 г','яблоко — 1 шт.'],steps:['Вымой и нарежь яблоко.','Соедини йогурт с хлопьями, подходящими для употребления без варки.','Добавь яблоко и перемешай.']},
+ {name:'Гречневая каша с молоком',meal:'breakfast',mins:25,vegetarian:true,ingredients:['гречка — 70 г','вода — 160 мл','молоко — 100 мл'],steps:['Промой гречку.','Вари в воде на слабом огне до мягкости, примерно 15–20 минут.','Добавь тёплое молоко и подавай.']},
+ {name:'Овощной суп',meal:'lunch',mins:35,vegetarian:true,ingredients:['картофель — 2 шт.','морковь — 1 шт.','лук — 1/2 шт.','вода — 800 мл'],steps:['Вымой, очисти и нарежь овощи.','Доведи воду до кипения, добавь картофель и морковь.','Добавь лук и вари на слабом огне до мягкости овощей, около 20–25 минут.']},
+ {name:'Гречка с грибами',meal:'lunch',mins:30,vegetarian:true,ingredients:['гречка — 80 г','шампиньоны — 120 г','лук — 1/2 шт.','вода — 180 мл'],steps:['Промой гречку и вари в воде до готовности по инструкции.','Вымой грибы, нарежь их и лук.','Потуши грибы с луком до полной готовности, затем смешай с гречкой.']},
+ {name:'Рис с овощами',meal:'lunch',mins:30,vegetarian:true,ingredients:['рис — 80 г','морковь — 1 шт.','зелёный горошек — 70 г','немного масла'],steps:['Промой рис и отвари по инструкции на упаковке.','Нарежь морковь и потуши с небольшим количеством воды до мягкости.','Добавь горошек, прогрей и смешай с готовым рисом.']},
+ {name:'Куриный суп с вермишелью',meal:'lunch',mins:50,vegetarian:false,ingredients:['куриное филе — 180 г','вермишель — 60 г','морковь — 1 шт.','картофель — 2 шт.','вода — 1 л'],steps:['Отвари куриное филе в воде до полной готовности; сырую курицу держи отдельно от готовых продуктов.','Добавь нарезанные картофель и морковь, вари до мягкости.','Добавь вермишель и вари по инструкции на упаковке.']},
+ {name:'Салат с фасолью',meal:'lunch',mins:12,vegetarian:true,ingredients:['консервированная фасоль — 150 г','помидор — 1 шт.','огурец — 1 шт.','оливковое масло — 1 ч. л.'],steps:['Промой консервированную фасоль.','Вымой и нарежь овощи.','Смешай с фасолью и заправь маслом.']},
+ {name:'Картофельное пюре с овощами',meal:'lunch',mins:30,vegetarian:true,ingredients:['картофель — 3 шт.','молоко — 80 мл','сливочное масло — 10 г','огурец — 1 шт.'],steps:['Очисти и нарежь картофель, отвари до мягкости примерно 15–20 минут.','Слей воду, разомни с тёплым молоком и маслом.','Подавай со свежим нарезанным огурцом.']},
+ {name:'Макароны с сыром',meal:'dinner',mins:20,vegetarian:true,ingredients:['макароны — 100 г','твёрдый сыр — 50 г','молоко — 60 мл','сливочное масло — 10 г'],steps:['Доведи воду до кипения и отвари макароны по времени на упаковке, затем слей воду.','На слабом огне слегка нагрей молоко с маслом, добавь натёртый сыр и перемешай до однородности.','Соедини макароны с сырным соусом, прогрей 1–2 минуты и подавай.']},
+ {name:'Картофель с овощами',meal:'dinner',mins:40,vegetarian:true,ingredients:['картофель — 3 шт.','морковь — 1 шт.','кабачок — 1/2 шт.','растительное масло — 1 ст. л.'],steps:['Разогрей духовку до 190 °C.','Вымой и нарежь овощи, смешай с небольшим количеством масла.','Запекай примерно 30–35 минут до мягкости, один раз перемешав.']},
+ {name:'Омлет с помидорами',meal:'dinner',mins:15,vegetarian:true,ingredients:['яйца — 2 шт.','помидор — 1 шт.','молоко — 2 ст. л.','немного масла'],steps:['Вымой и нарежь помидор.','Перемешай яйца с молоком и добавь помидор.','Готовь под крышкой на слабом огне до полного схватывания яиц.']},
+ {name:'Паста с томатами',meal:'dinner',mins:25,vegetarian:true,ingredients:['макароны — 100 г','помидоры — 2 шт.','чеснок — 1 зубчик','оливковое масло — 1 ч. л.'],steps:['Отвари макароны по инструкции.','Нарежь помидоры и потуши с чесноком на слабом огне 8–10 минут.','Соедини пасту с томатным соусом и прогрей.']},
+ {name:'Рис с курицей и овощами',meal:'dinner',mins:40,vegetarian:false,ingredients:['рис — 80 г','куриное филе — 150 г','морковь — 1 шт.','горошек — 50 г'],steps:['Отвари рис по инструкции на упаковке.','Нарежь курицу и приготовь до полной готовности; сырую курицу держи отдельно от остальных продуктов.','Потуши морковь с горошком до мягкости, смешай с готовыми рисом и курицей.']},
+ {name:'Запечённая рыба с картофелем',meal:'dinner',mins:40,vegetarian:false,ingredients:['филе рыбы без костей — 160 г','картофель — 2 шт.','лимон — 1/4 шт.','немного масла'],steps:['Разогрей духовку до 190 °C.','Нарежь картофель тонкими ломтиками и начни запекать 15 минут.','Добавь рыбу и немного лимонного сока, запекай ещё примерно 15–20 минут до полной готовности рыбы и картофеля.']}
+];
+const MEAL_LABEL={breakfast:'завтрак',lunch:'обед',dinner:'ужин'};
+const mealSessions={};
+function mealState(){return mealSessions[activeChatId]||(mealSessions[activeChatId]={meal:null,vegetarian:false,quick:false,offset:0,offered:[],selected:null})}
+function mealCandidates(state){return MEAL_RECIPES.filter(r=>r.meal===state.meal&&(!state.vegetarian||r.vegetarian)&&(!state.quick||r.mins<=25))}
+function mealOffer(state){let options=mealCandidates(state);if(!options.length){state.quick=false;options=mealCandidates(state)}if(!options.length)return 'Пока нет подходящих блюд.';const count=Math.min(3,options.length);const list=Array.from({length:count},(_,i)=>options[(state.offset+i)%options.length]);state.offered=list.map(x=>x.name);return '🍽️ Вот что можно приготовить на '+MEAL_LABEL[state.meal]+':\n\n'+list.map((r,i)=>(i+1)+'. '+r.name+' — примерно '+r.mins+' мин.').join('\n')+'\n\nВыбери номер или название блюда. Можно написать «Другое», «Без мяса» или «Побыстрее». 💚'}
+function selectMealRecipe(r){const m=mealState(),c=cookingState();m.selected=r;m.offered=[];c.recipe={name:r.name,ingredients:r.ingredients,steps:r.steps.map((s,i)=>(i+1)+'. '+s).join('\n'),category:'Готовое блюдо',mealMinutes:r.mins};c.step=0;c.active=false;return '🍲 '+r.name+'\n⏱️ Примерно '+r.mins+' минут.\n\nИнгредиенты (примерно на 1 порцию):\n• '+r.ingredients.join('\n• ')+'\n\nПриготовление:\n'+r.steps.map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\nНапиши «Давай приготовим вместе», чтобы открыть карточку с шагами. 💚'}
+function mealRecommendationReply(raw){const s=recipeNorm(raw),m=mealState();
+ const meal=/(?:завтрак|позавтракать|утром|на утро)/.test(s)?'breakfast':/(?:обед|пообедать)/.test(s)?'lunch':/(?:ужин|поужинать|вечером)/.test(s)?'dinner':null;
+ const asks=/(?:что|чего|чем|посовет|предлож|иде|вариант|выбрать|подобрать|порекоменду|хочу что нибудь)/.test(s);
+ if(meal&&asks){m.meal=meal;m.offset=0;m.vegetarian=/(?:без мяса|вегетариан)/.test(s);m.quick=/(?:быстр|за 15|за 20)/.test(s);return mealOffer(m)}
+ if(!m.meal){if(/(?:рецепт|как приготовить|хочу приготовить)/.test(s)){const r=MEAL_RECIPES.find(r=>s.includes(recipeNorm(r.name)));if(r)return selectMealRecipe(r)}return null;}
+ if(/^(?:другое|другие|еще|еще варианты|а еще|что нибудь другое|предложи другое|не нравится|не хочу это|другой вариант)$/.test(s)){m.offset+=3;return mealOffer(m)}
+ if(/(?:без мяса|вегетарианск)/.test(s)){m.vegetarian=true;m.offset=0;return mealOffer(m)}
+ if(/(?:побыстрее|быстрее|что нибудь быстрое|до 25 минут)/.test(s)){m.quick=true;m.offset=0;return mealOffer(m)}
+ if(/^(?:отмена|не надо|не хочу выбирать|закончим выбирать)$/.test(s)){m.meal=null;m.offered=[];return 'Хорошо, выбор блюд закрыт. 💚'}
+ if(m.offered.length){const digit=s.match(/^(?:выбираю |давай |хочу |номер |вариант )?([1-3])(?: вариант)?$/);if(digit)return selectMealRecipe(MEAL_RECIPES.find(r=>r.name===m.offered[Number(digit[1])-1]));const chosen=MEAL_RECIPES.find(r=>m.offered.includes(r.name)&&(s.includes(recipeNorm(r.name))||recipeNorm(r.name).includes(s)&&s.length>5));if(chosen)return selectMealRecipe(chosen)}
+ // Explicit named dishes are available even without first opening the meal menu.
+ if(/(?:рецепт|как приготовить|давай приготовим|хочу приготовить|выбираю)/.test(s)){const r=MEAL_RECIPES.find(r=>s.includes(recipeNorm(r.name)));if(r)return selectMealRecipe(r)}
+ return null;
+}
+function mealChoicesWidget(){const m=mealState();if(!m.offered.length)return;const section=document.createElement('section');section.className='smart-widget meal-options';const h=document.createElement('h3');h.textContent='🍽️ Выбери блюдо';section.append(h);for(let i=0;i<m.offered.length;i++){const name=m.offered[i];const r=MEAL_RECIPES.find(x=>x.name===name);const btn=document.createElement('button');btn.textContent=(i+1)+'. '+name+' · '+r.mins+' мин';btn.onclick=()=>send(String(i+1));section.append(btn)}const controls=document.createElement('div');controls.className='widget-row';for(const [label,prompt] of [['🔄 Другие','Другое'],['🥦 Без мяса','Без мяса'],['⏱️ Быстрее','Побыстрее']]){const btn=document.createElement('button');btn.textContent=label;btn.onclick=()=>send(prompt);controls.append(btn)}section.append(controls);chat.append(section);chat.scrollTop=chat.scrollHeight}
+
+const recipeNorm=t=>String(t||'').toLowerCase().replace(/ё/g,'е').replace(/[^а-яa-z0-9]+/g,' ').trim();
+const recipeTokens=t=>recipeNorm(t).split(/\s+/).filter(x=>x.length>=3);
+function recipeMatches(r,query){const q=recipeTokens(query);if(!q.length)return 0;const hay=recipeTokens(r.name+' '+r.ingredients.join(' '));return q.reduce((score,w)=>score+(hay.some(x=>x===w||x.startsWith(w.slice(0,Math.max(3,w.length-2)))||w.startsWith(x.slice(0,Math.max(3,x.length-2))))?1:0),0)}
+function recipeText(r){return '🍲 '+r.name+'\n\nИнгредиенты: '+r.ingredients.join(', ')+'.\n\nПриготовление:\n'+r.steps+'\n\n⚠️ При работе с плитой, духовкой и ножами соблюдай осторожность.'}
+function recipeChatReply(raw){
+ const s=recipeNorm(raw);
+ const ongoing=cookingQuestion(raw);if(ongoing!==null)return ongoing;
+ if(!/(?:рецепт|как приготовить|как готовить|как сделать|что приготовить|что можно приготовить)/.test(s))return null;
+ const query=s.replace(/(?:покажи|дай|напиши|подскажи|мне|пожалуйста|рецепт|как приготовить|как готовить|как сделать|что приготовить|что можно приготовить|блюда|блюдо|из|для)/g,' ').trim();
+ if(!query)return '🍲 В Family AI теперь 1000 вариантов рецептов! Напиши название блюда, например «рецепт гречки с грибами» или открой 🏡 Семейный центр → Рецепты.';
+ const found=familyRecipes.map(r=>({r,score:recipeMatches(r,query)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+ if(!found.length)return 'Пока не нашёл подходящего рецепта в локальной коллекции. Попробуй название продукта или блюда, например «паста», «омлет», «суп».';
+ const state=cookingState();state.recipe=found[0].r;state.step=0;state.active=false;
+ return recipeText(found[0].r)+'\n\nНапиши «Давай приготовим вместе», чтобы открыть пошаговый виджет. 💚';
+}
+
+// Family AI 3.9: интерактивное приготовление и вопросы по текущему рецепту.
+const cookingSessions={};
+function cookingState(){return cookingSessions[activeChatId]||(cookingSessions[activeChatId]={recipe:null,step:0,active:false})}
+function cookingSteps(r){return r.steps.split(/\n(?=\d+\.\s)/).map(x=>x.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)}
+function cookingGuideRequested(raw){return /(?:давай|будем|хочу|начнем|начнем|начнём|готовим|готовить|приготовим|по шагам|пошагово|веди меня)/i.test(raw)&&/(?:готов|приготов|шаг|вместе|кухн)/i.test(raw)}
+function cookingTiming(r){
+ if(r.mealMinutes)return "Примерное общее время — "+r.mealMinutes+" минут. Точное время зависит от продуктов и техники; проверяй готовность.";
+ const k=r.category;
+ const guide={
+ 'Каша':'Ориентируйся на время для конкретной крупы на упаковке: разные крупы варятся по-разному. Готовность — крупа мягкая.',
+ 'Омлет':'Обычно около 5–10 минут на слабом или среднем огне под крышкой, но время зависит от толщины. Яйца должны полностью схватиться, без жидких участков.',
+ 'Суп':'Время зависит от ингредиентов: овощи часто становятся мягкими за 15–30 минут, сухие бобовые требуют отдельной подготовки и более долгой варки. Проверяй мягкость.',
+ 'Салат':'Обычно 10–20 минут на подготовку; если в составе есть свёкла, фасоль или другие продукты, требующие варки, их приготовление займёт дополнительное время.',
+ 'Паста':'Макароны вари столько, сколько указано на упаковке (часто 7–12 минут); овощи или соус готовь отдельно до полной готовности.',
+ 'Рис':'Рис часто варят около 15–25 минут, но точное время и количество воды зависят от сорта. Смотри упаковку.',
+ 'Запечённый картофель':'Запекай примерно 30–45 минут при 190 °C, проверяя мягкость вилкой. Большие кусочки могут готовиться дольше.',
+ 'Творожный десерт':'Варить или жарить не нужно: обычно достаточно 5–15 минут на подготовку.',
+ 'Смузи':'Варить или жарить не нужно: обычно 5–10 минут на подготовку и взбивание.',
+ 'Гречка':'Гречку обычно варят примерно 15–20 минут, но лучше свериться с упаковкой. Овощи готовь отдельно до мягкости.'
+ };return guide[k]||'Время зависит от состава и размера порции. Проверяй готовность каждого ингредиента.';
+}
+function cookingQuestion(raw){
+ const s=recipeNorm(raw),c=cookingState();if(!c.recipe)return null;
+ if(/(?:другой рецепт|сменить блюдо|другое блюдо|закончили готовить|готовка закончена|прекрати готовить|выйти из готовки)/.test(s)){c.active=false;c.recipe=null;return 'Хорошо, завершили готовку. 💚 Можешь выбрать другое блюдо.'}
+ if(cookingGuideRequested(raw)){c.active=true;return '👩‍🍳 Готовим «'+c.recipe.name+'» вместе! Ниже появится карточка с шагами. Можешь также задавать вопросы в чате.'}
+ if(/^(?:следующий шаг|дальше|далее|следующий|готово|сделал|сделала)$/.test(s)&&c.active){c.step=Math.min(c.step+1,cookingSteps(c.recipe).length-1);return '👩‍🍳 Шаг '+(c.step+1)+' из '+cookingSteps(c.recipe).length+': '+cookingSteps(c.recipe)[c.step]}
+ if(/^(?:назад|предыдущий шаг|верни шаг|вернуться назад)$/.test(s)&&c.active){c.step=Math.max(0,c.step-1);return '👩‍🍳 Вернулись к шагу '+(c.step+1)+': '+cookingSteps(c.recipe)[c.step]}
+ if(/(?:сколько|долго|время|минут|часов|таймер)/.test(s)&&/(?:готов|вар|жар|печ|запека|туш|держать|врем|минут|часов)/.test(s))return '⏱️ '+cookingTiming(c.recipe)+'\n\nЕсли скажешь, какой именно ингредиент готовишь, я постараюсь уточнить.';
+ if(/(?:как жарить|на каком огне|сколько масла|как обжарить|нужно ли жарить)/.test(s))return ['Омлет','Паста','Рис','Гречка'].includes(c.recipe.category)?'🍳 Если в рецепте нужно обжаривать овощи, используй немного масла и умеренный нагрев, помешивай до мягкости. Для омлета лучше слабый или средний нагрев под крышкой. Не оставляй плиту без присмотра.':'🍳 В этом рецепте жарка не обязательна. '+cookingTiming(c.recipe);
+ if(/(?:как варить|как отварить|сколько воды|когда закипит|кипяток|посолить воду)/.test(s))return '🥣 '+cookingTiming(c.recipe)+'\n\nВоду и пропорции лучше брать по инструкции для конкретной крупы или макарон. Для супа продукты варят до мягкости.';
+ if(/(?:как понять|готово ли|проверить готовность|не сыро|уже готов)/.test(s))return '✅ '+cookingTiming(c.recipe)+'\n\nОриентируйся не только на минуты, но и на готовность ингредиентов.';
+ if(/(?:что сейчас|какой шаг|что дальше делать|что мне делать|повтори шаг|я запутал)/.test(s))return '👩‍🍳 Сейчас шаг '+(c.step+1)+' из '+cookingSteps(c.recipe).length+': '+cookingSteps(c.recipe)[c.step];
+ if(/(?:чем заменить|можно заменить|нет .*ингредиент|без .*|можно ли добавить|добавить .*|вместо .*|сколько .* нужно)/.test(s))return '🥕 Для «'+c.recipe.name+'» указаны продукты: '+c.recipe.ingredients.join(', ')+'. Напиши, какой конкретно ингредиент хочешь заменить или добавить. Я не буду придумывать точные пропорции, которых нет в рецепте.';
+ if(/(?:сколько порций|на сколько человек|грамм|миллилитр|пропорци|количество ингредиент)/.test(s))return '📏 В этой коллекции ингредиенты пока записаны без точных граммовок и числа порций. Не хочу придумывать точные количества. Можем ориентироваться на упаковку продуктов или подобрать проверенный рецепт с пропорциями.';
+ if(/(?:почему|зачем|для чего)/.test(s)&&c.active)return 'Сейчас мы готовим «'+c.recipe.name+'», шаг '+(c.step+1)+': '+cookingSteps(c.recipe)[c.step]+'. Уточни, какое действие непонятно, и я объясню его назначение.';
+ return null;
+}
+function cookingWidget(r){
+ const state=cookingState();if(!r)return;
+ const card=document.createElement('section');card.className='smart-widget cooking-card';card.setAttribute('aria-label','Пошаговый рецепт');
+ const h=document.createElement('h3');h.textContent='👩‍🍳 Готовим вместе: '+r.name;
+ const counter=document.createElement('div');counter.className='cooking-progress';
+ const instruction=document.createElement('div');instruction.className='widget-result';
+ const controls=document.createElement('div');controls.className='widget-row';
+ const back=document.createElement('button');back.textContent='← Назад';
+ const next=document.createElement('button');next.textContent='Далее →';
+ const time=document.createElement('button');time.textContent='⏱️ Сколько готовить?';
+ const ingredients=document.createElement('button');ingredients.textContent='🥕 Ингредиенты';
+ const info=document.createElement('div');info.className='widget-result';info.style.fontSize='14px';
+ const steps=cookingSteps(r);
+ function paint(){counter.textContent='Шаг '+(state.step+1)+' из '+steps.length;instruction.textContent=steps[state.step];back.disabled=state.step===0;next.textContent=state.step===steps.length-1?'✓ Закончить':'Далее →';}
+ back.onclick=()=>{state.active=true;state.step=Math.max(0,state.step-1);paint()};
+ next.onclick=()=>{if(state.step>=steps.length-1){state.active=false;info.textContent='🎉 Готовка завершена! Перед подачей проверь, что все ингредиенты полностью приготовились.';return}state.active=true;state.step++;info.textContent='';paint()};
+ time.onclick=()=>{info.textContent=cookingTiming(r)};
+ ingredients.onclick=()=>{info.textContent='Для рецепта нужны: '+r.ingredients.join(', ')+'. Точные количества в исходной коллекции не указаны.'};
+ controls.append(back,next);card.append(h,counter,instruction,controls,time,ingredients,info);chat.append(card);paint();chat.scrollTop=chat.scrollHeight;
+}
+function recoverCookingRecipe(){const c=cookingState();if(c.recipe)return c.recipe;for(let i=messages.length-1;i>=0;i--){const m=messages[i];if(m.role!=='bot'||!m.text.startsWith('🍲 '))continue;const name=m.text.split('\n')[0].slice(3).trim();const r=familyRecipes.find(x=>x.name===name);if(r){c.recipe=r;return r}}return null}
+
+const recipeSearchInput=document.createElement('input');recipeSearchInput.id='recipeSearch';recipeSearchInput.placeholder='🔎 Поиск по 1000 рецептам';recipeSearchInput.setAttribute('aria-label','Поиск рецептов');
+$('recipeSelect').before(recipeSearchInput);
+const recipeCount=document.createElement('p');recipeCount.className='family-note';recipeCount.textContent='В коллекции '+familyRecipes.length+' вариантов рецептов · работает без интернета';recipeSearchInput.before(recipeCount);
+function fillRecipeSelect(query=''){
+ const select=$('recipeSelect');select.replaceChildren();let count=0;
+ for(let i=0;i<familyRecipes.length;i++){if(query&&!recipeMatches(familyRecipes[i],query))continue;const o=document.createElement('option');o.value=String(i);o.textContent=familyRecipes[i].name;select.append(o);count++}
+ if(!count){const o=document.createElement('option');o.value='';o.textContent='Ничего не найдено';select.append(o)}
+ recipeCount.textContent='Найдено: '+count+' из '+familyRecipes.length+' рецептов';
+}
+fillRecipeSelect();recipeSearchInput.oninput=()=>fillRecipeSelect(recipeSearchInput.value);
+function showFamilyRecipe(r){$('recipeResult').textContent=r?recipeText(r):'Выбери рецепт из списка.'}
+$('recipeShow').onclick=()=>showFamilyRecipe(familyRecipes[Number($('recipeSelect').value)]);
+$('recipeFind').onclick=()=>{
+ const raw=$('ingredientsInput').value.trim();if(!raw){$('recipeResult').textContent='Напиши продукты через запятую.';return}
+ const words=raw.split(/[,;\n]+/).map(recipeNorm).filter(Boolean);
+ const ranked=familyRecipes.map(r=>({r,score:r.ingredients.filter(x=>words.some(w=>recipeMatches({name:x,ingredients:[]},w)>0)).length})).sort((a,b)=>b.score-a.score);
+ if(!ranked[0].score){$('recipeResult').textContent='Совпадений не нашлось. Попробуй другие продукты.';return}
+ showFamilyRecipe(ranked[0].r);$('recipeResult').textContent+='\n\nСовпало ингредиентов: '+ranked[0].score+'. Остальные проверь перед готовкой.';
+};
+// Вкладка может быть закрыта или выгружена: никаких обещаний фоновых уведомлений.
+function familyCheckReminders(){const now=Date.now();let changed=false;for(const x of familyData.reminders){if(x.done||x.notified||x.owner!==activeProfileId)continue;const at=new Date(x.when).getTime();if(Number.isFinite(at)&&at<=now){x.notified=true;changed=true;if(document.visibilityState==='visible'){add('bot','🔔 Напоминание: '+x.text)}else{document.title='🔔 Напоминание — Family AI'}}}if(changed)familySave()}
+setInterval(familyCheckReminders,30000);
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err =>
+      console.warn('PWA: service worker недоступен', err));
+  });
+}
+</script>
+</body></html>
